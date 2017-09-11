@@ -4,7 +4,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using System.Windows.Forms;
 
-namespace Beatmap_Info_Editor
+namespace Editor
 {
     static class Program
     {
