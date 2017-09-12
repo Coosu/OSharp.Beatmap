@@ -13,6 +13,6 @@ namespace Editor.Object
         public int BeatDivisor { get; set; }
         public int GridSize { get; set; }
         public double TimelineZoom { get; set; }
-
+        public string TheRestText { get; set; }
     }
 }

@@ -18,5 +18,6 @@ namespace Editor.Object
         public bool LetterboxInBreaks { get; set; }
         public bool EpilepsyWarning { get; set; } // 默认0
         public bool WidescreenStoryboard { get; set; }
+        public string TheRestText { get; set; }
     }
 }

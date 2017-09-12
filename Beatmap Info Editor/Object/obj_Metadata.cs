@@ -18,5 +18,6 @@ namespace Editor.Object
         public _Tags Tags { get; set; }
         public int BeatmapID { get; set; }
         public int BeatmapSetID { get; set; }
+        public string TheRestText { get; set; }
     }
 }

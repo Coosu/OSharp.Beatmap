@@ -8,8 +8,8 @@ namespace Editor.Object
 {
     public enum _SampleSet
     {
-        Soft,
         Normal,
+        Soft,
         Drum
     }
 }

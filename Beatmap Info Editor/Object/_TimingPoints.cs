@@ -43,9 +43,20 @@ namespace Editor.Object
         }
 
         // 先鸽3个参数，忘了意义
-
+        public int Rhythm
+        {
+            get => rhythm;
+            set
+            {
+                //if (value < 1 || value > 7) value = 4; //此处待定
+                rhythm = value;
+            }
+        }
+        public int Track { get; set; }
+        public _SampleSet SampleSet { get; set; }
         public int Volume { get; set; }
         public bool Inherit { get; set; }
         public bool Kiai { get; set; }
+        private int rhythm;
     }
 }

@@ -17,5 +17,6 @@ namespace Editor.Object
         public Color Combo6 { get; set; }
         public Color Combo7 { get; set; }
         public Color Combo8 { get; set; }
+        public string TheRestText { get; set; }
     }
 }

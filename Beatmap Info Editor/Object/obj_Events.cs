@@ -9,5 +9,6 @@ namespace Editor.Object
     public class obj_Events
     {
         // 先鸽，忘记了某些参数意义
+        public string TheRestText { get; set; }
     }
 }

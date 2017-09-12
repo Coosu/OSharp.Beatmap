@@ -14,6 +14,6 @@ namespace Editor.Object
         public double ApproachRate { get; set; }
         public double SliderMultiplier { get; set; }
         public double SliderTickRate { get; set; }
-
+        public string TheRestText { get; set; }
     }
 }

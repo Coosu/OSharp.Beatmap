@@ -17,5 +17,6 @@ namespace Editor.Object
         public obj_TimingPoints TimingPoints { get; set; }
         public obj_Colours Colours { get; set; }
         public obj_HitObjects HitObjects { get; set; }
+        public string TheRestSets { get; set; }
     }
 }
