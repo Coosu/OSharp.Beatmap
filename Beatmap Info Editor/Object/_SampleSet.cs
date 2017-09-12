@@ -10,6 +10,7 @@ namespace Editor.Object
     {
         Normal,
         Soft,
-        Drum
+        Drum,
+        None
     }
 }

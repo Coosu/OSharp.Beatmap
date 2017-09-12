@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace Editor.Object
 {
-    public class obj_Settings
+    public class OsuFile
     {
         public int Version { get; set; }
         public obj_General General { get; set; }
@@ -17,6 +17,6 @@ namespace Editor.Object
         public obj_TimingPoints TimingPoints { get; set; }
         public obj_Colours Colours { get; set; }
         public obj_HitObjects HitObjects { get; set; }
-        public string TheRestSets { get; set; }
+        public string TheRestText { get; set; }
     }
 }
