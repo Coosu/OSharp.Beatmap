@@ -23,6 +23,7 @@ namespace Editor
                 Matching(of, line);
                 line = sr.ReadLine();
             }
+            Console.WriteLine(of.Colours.ToString());
             sr.Close();
             return of;
         }
@@ -263,8 +264,10 @@ namespace Editor
                 Console.WriteLine("Colours." + name);
                 return;
             }
-            if (nameProp.GetMethod.ReturnType == typeof(System.Drawing.Color))
+            if (nameProp.GetMethod.ReturnType == typeof(System.Drawing.Color)) {
                 nameProp.SetValue(of.Colours, System.Drawing.Color.FromArgb(int.Parse(colors[0]), int.Parse(colors[1]), int.Parse(colors[2])));
+                of.Colours.Count++;
+            }
             else throw new Exception("鸽爆");
         }
         private static void MatchedHitObjects(OsuFile of, string line)
