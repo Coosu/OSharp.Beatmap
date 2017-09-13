@@ -8,6 +8,8 @@ namespace Editor.Object
 {
     public class obj_General
     {
+        StringBuilder sb = new StringBuilder();
+
         public string AudioFilename { get; set; }
         public int AudioLeadIn { get; set; }
         public int PreviewTime { get; set; }
@@ -19,5 +21,21 @@ namespace Editor.Object
         public bool EpilepsyWarning { get; set; } // 默认0
         public bool WidescreenStoryboard { get; set; }
         public string TheRestText { get; set; }
+        public override string ToString()
+        {
+            var list = GetType().GetProperties();
+
+            sb.Clear();
+            sb.AppendLine("[General]");
+            for (int i = 0; i < list.Length - 1; i++)
+            {
+                if (list[i].PropertyType == typeof(bool))
+                    sb.AppendLine(list[i].Name + ": " + int.Parse(list[i].GetValue(this).ToString())); //
+                else
+                    sb.AppendLine(list[i].Name + ": " + list[i].GetValue(this));
+            }
+            sb.Append(TheRestText.ToString());
+            return sb.ToString();
+        }
     }
 }

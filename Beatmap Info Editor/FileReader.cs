@@ -23,6 +23,7 @@ namespace Editor
                 Matching(of, line);
                 line = sr.ReadLine();
             }
+            Console.WriteLine(of.General.ToString());
             Console.WriteLine(of.Colours.ToString());
             sr.Close();
             return of;

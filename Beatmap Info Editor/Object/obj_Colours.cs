@@ -10,6 +10,7 @@ namespace Editor.Object
     public class obj_Colours
     {
         StringBuilder sb = new StringBuilder();
+
         public Color Combo1 { get; set; }
         public Color Combo2 { get; set; }
         public Color Combo3 { get; set; }
