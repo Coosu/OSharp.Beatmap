@@ -8,6 +8,7 @@ namespace Editor.Object
 {
     public class obj_TimingPoints
     {
-        public List<_TimingPoints> TimingPoints { get; set; }
+        public List<_TimingPoints> TimingPointList { get; set; }
+        public string TheRestText { get; set; }
     }
 }

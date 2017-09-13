@@ -12,6 +12,7 @@ namespace Editor
     public class OsuFileReader
     {
         private static _Status status;
+        private static StringBuilder sb;
         public static OsuFile ReadFromFile(string root)
         {
             StreamReader sr = new StreamReader(root);
@@ -57,6 +58,32 @@ namespace Editor
                     of.Difficulty = new obj_Difficulty();
                     status = _Status.Difficulty;
                 }
+                else if (line == "Events")
+                {
+                    Console.WriteLine("To optimize your storyboard layer, visit: https://osu.ppy.sh/forum/t/532042");
+                    sb = new StringBuilder();
+                    of.Events = new obj_Events();
+                    status = _Status.Events;
+                }
+                else if (line == "TimingPoints")
+                {
+                    sb.Clear();
+                    sb = null;
+                    of.TimingPoints = new obj_TimingPoints();
+                    of.TimingPoints.TimingPointList = new List<_TimingPoints>();
+                    status = _Status.TimingPoints;
+                }
+                else if (line == "Colours")
+                {
+                    of.Colours = new obj_Colours();
+                    status = _Status.Colours;
+                }
+                else if (line == "HitObjects")
+                {
+                    of.HitObjects = new obj_HitObjects();
+                    of.HitObjects.HitObjectList = new List<_HitObjects>();
+                    status = _Status.HitObjects;
+                }
             }
             else if (status != _Status.Version)
             {
@@ -64,7 +91,10 @@ namespace Editor
                 else if (status == _Status.Editor) MatchedEditor(of, line);
                 else if (status == _Status.Metadata) MatchedMetadata(of, line);
                 else if (status == _Status.Difficulty) MatchedDifficulty(of, line);
-                // 先鸽到这里
+                else if (status == _Status.Events) MatchedEvents(of, line);
+                else if (status == _Status.TimingPoints) MatchedTimingPoints(of, line);
+                else if (status == _Status.Colours) MatchedColours(of, line);
+                else if (status == _Status.HitObjects) MatchedHitObjects(of, line);
             }
             else
             {
@@ -82,14 +112,14 @@ namespace Editor
             string name, value;
             int pos = line.IndexOf(":");
             if (pos == -1) throw new Exception("cnm");
-            name = line.Substring(0, pos);
-            value = line.Substring(name.Length + 2, line.Length - 1 - name.Length - 1);
+            name = line.Substring(0, pos).Trim();
+            value = line.Substring(name.Length + 2, line.Length - 1 - name.Length - 1).Trim();
 
             var nameProp = of.General.GetType().GetProperty(name, BindingFlags.Public | BindingFlags.Instance);
 
             if (nameProp == null)
             {
-                Console.WriteLine(name);
+                Console.WriteLine("General." + name);
                 return;
             }
             if (nameProp.GetMethod.ReturnType == typeof(string))
@@ -116,14 +146,14 @@ namespace Editor
             string name, value;
             int pos = line.IndexOf(":");
             if (pos == -1) throw new Exception("cnm");
-            name = line.Substring(0, pos);
-            value = line.Substring(name.Length + 2, line.Length - 1 - name.Length - 1);
+            name = line.Substring(0, pos).Trim();
+            value = line.Substring(name.Length + 2, line.Length - 1 - name.Length - 1).Trim();
 
             var nameProp = of.Editor.GetType().GetProperty(name, BindingFlags.Public | BindingFlags.Instance);
 
             if (nameProp == null)
             {
-                Console.WriteLine(name);
+                Console.WriteLine("Editor." + name);
                 return;
             }
 
@@ -145,14 +175,14 @@ namespace Editor
             string name, value;
             int pos = line.IndexOf(":");
             if (pos == -1) throw new Exception("cnm");
-            name = line.Substring(0, pos);
-            value = line.Substring(name.Length + 1, line.Length - name.Length - 1);
+            name = line.Substring(0, pos).Trim();
+            value = line.Substring(name.Length + 1, line.Length - name.Length - 1).Trim();
 
             var nameProp = of.Metadata.GetType().GetProperty(name, BindingFlags.Public | BindingFlags.Instance);
 
             if (nameProp == null)
             {
-                Console.WriteLine(name);
+                Console.WriteLine("Metadata." + name);
                 return;
             }
             if (nameProp.GetMethod.ReturnType == typeof(string))
@@ -171,14 +201,14 @@ namespace Editor
             string name, value;
             int pos = line.IndexOf(":");
             if (pos == -1) throw new Exception("cnm");
-            name = line.Substring(0, pos);
-            value = line.Substring(name.Length + 1, line.Length - name.Length - 1);
+            name = line.Substring(0, pos).Trim();
+            value = line.Substring(name.Length + 1, line.Length - name.Length - 1).Trim();
 
             var nameProp = of.Difficulty.GetType().GetProperty(name, BindingFlags.Public | BindingFlags.Instance);
 
             if (nameProp == null)
             {
-                Console.WriteLine(name);
+                Console.WriteLine("Difficulty." + name);
                 return;
             }
             if (nameProp.GetMethod.ReturnType == typeof(double))
@@ -187,5 +217,71 @@ namespace Editor
                 nameProp.SetValue(of.Difficulty, int.Parse(value));
             else throw new Exception("鸽爆");
         }
-    }
+        private static void MatchedEvents(OsuFile of, string line)
+        {
+            sb.AppendLine(line);
+            of.Events.TheRestText = sb.ToString();
+        }
+        private static void MatchedTimingPoints(OsuFile of, string line)
+        {
+            if (line == "")
+            {
+                of.TimingPoints.TheRestText += Environment.NewLine;
+                return;
+            }
+            string[] param = line.Split(',');
+            of.TimingPoints.TimingPointList.Add(new _TimingPoints()
+            {
+                Offset = int.Parse(param[0]),
+                Factor = double.Parse(param[1]),
+                Rhythm = int.Parse(param[2]),
+                SampleSet = (_SampleSet)(int.Parse(param[3]) - 1),
+                Track = int.Parse(param[4]),
+                Volume = int.Parse(param[5]),
+                Inherit = !Convert.ToBoolean(int.Parse(param[6])),
+                Kiai = Convert.ToBoolean(int.Parse(param[7])),
+                Positive = double.Parse(param[1]) < 0 ? false : true
+            });
+        }
+        private static void MatchedColours(OsuFile of, string line)
+        {
+            if (line == "")
+            {
+                of.Colours.TheRestText += Environment.NewLine;
+                return;
+            }
+            string name, value;
+            int pos = line.IndexOf(":");
+            if (pos == -1) throw new Exception("cnm");
+            name = line.Substring(0, pos).Trim();
+            value = line.Substring(name.Length + 2, line.Length - 1 - name.Length - 1).Trim();
+            string[] colors = value.Split(',');
+            var nameProp = of.Colours.GetType().GetProperty(name, BindingFlags.Public | BindingFlags.Instance);
+
+            if (nameProp == null)
+            {
+                Console.WriteLine("Colours." + name);
+                return;
+            }
+            if (nameProp.GetMethod.ReturnType == typeof(System.Drawing.Color))
+                nameProp.SetValue(of.Colours, System.Drawing.Color.FromArgb(int.Parse(colors[0]), int.Parse(colors[1]), int.Parse(colors[2])));
+            else throw new Exception("鸽爆");
+        }
+        private static void MatchedHitObjects(OsuFile of, string line)
+        {
+            if (line == "")
+            {
+                of.HitObjects.TheRestText += Environment.NewLine;
+                return;
+            }
+            string[] param = line.Split(',');
+            of.HitObjects.HitObjectList.Add(new _HitObjects()
+            {
+                X = int.Parse(param[0]),
+                Y = int.Parse(param[1]),
+                Offset = int.Parse(param[2]),
+                TheRestText = line.Replace(param[0] + "," + param[0] + "," + param[0] + ",", "")
+        });
+        }
+}
 }

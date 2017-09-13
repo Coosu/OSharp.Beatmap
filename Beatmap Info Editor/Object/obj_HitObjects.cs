@@ -8,6 +8,8 @@ namespace Editor.Object
 {
     public class obj_HitObjects
     {
-        public List<_HitObjects> HitObjects { get; set; }
+        public List<_HitObjects> HitObjectList { get; set; }
+        public string TheRestText { get; set; }
+
     }
 }

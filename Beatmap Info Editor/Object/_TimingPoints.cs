@@ -52,11 +52,12 @@ namespace Editor.Object
                 rhythm = value;
             }
         }
-        public int Track { get; set; }
         public _SampleSet SampleSet { get; set; }
+        public int Track { get; set; }
         public int Volume { get; set; }
         public bool Inherit { get; set; }
         public bool Kiai { get; set; }
+
         private int rhythm;
     }
 }
