@@ -13,6 +13,7 @@ namespace Editor.Object
         {
             get
             {
+                if (BookmarkList == null) return null;
                 sb.Clear();
                 for (int i = 0; i < BookmarkList.Count; i++)
                 {
@@ -34,6 +35,28 @@ namespace Editor.Object
         public int GridSize { get; set; }
         public double TimelineZoom { get; set; }
         public string TheRestText { get; set; }
+
         private List<int> bookmarkList;
+
+        public override string ToString()
+        {
+            var list = GetType().GetProperties();
+
+            sb.Clear();
+            sb.AppendLine("[Editor]");
+            for (int i = 0; i < list.Length - 1; i++)
+            {
+                if (list[i].PropertyType == typeof(bool))
+                    sb.AppendLine(list[i].Name + ": " + Convert.ToInt32(list[i].GetValue(this)));
+                else if (list[i].Name == "Bookmarks" && list[i].GetValue(this) == null)
+                    continue;
+                else if (list[i].Name == "BookmarkList")
+                    continue;
+                else
+                    sb.AppendLine(list[i].Name + ": " + list[i].GetValue(this));
+            }
+            sb.Append(TheRestText.ToString());
+            return sb.ToString();
+        }
     }
 }

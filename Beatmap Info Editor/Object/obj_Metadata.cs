@@ -9,6 +9,7 @@ namespace Editor.Object
     public class obj_Metadata
     {
         private StringBuilder sb = new StringBuilder();
+        private StringBuilder sb2 = new StringBuilder();
 
         public string Title { get; set; }
         public string TitleUnicode { get; set; }
@@ -21,13 +22,14 @@ namespace Editor.Object
         {
             get
             {
-                sb.Clear();
+                if (tagList == null) return "";
+                sb2.Clear();
                 for (int i = 0; i < TagList.Count; i++)
                 {
-                    if (i != TagList.Count - 1) sb.Append(TagList[i] + " ");
-                    else sb.Append(TagList[i]);
+                    if (i != TagList.Count - 1) sb2.Append(TagList[i] + " ");
+                    else sb2.Append(TagList[i]);
                 }
-                return sb.ToString();
+                return sb2.ToString();
             }
             set
             {
@@ -41,5 +43,23 @@ namespace Editor.Object
 
         private List<string> tagList;
 
+        public override string ToString()
+        {
+            var list = GetType().GetProperties();
+
+            sb.Clear();
+            sb.AppendLine("[Metadata]");
+            for (int i = 0; i < list.Length - 1; i++)
+            {
+                if (list[i].PropertyType == typeof(bool))
+                    sb.AppendLine(list[i].Name + ":" + Convert.ToInt32(list[i].GetValue(this)));
+                else if (list[i].Name == "TagList")
+                    continue;
+                else
+                    sb.AppendLine(list[i].Name + ":" + list[i].GetValue(this));
+            }
+            sb.Append(TheRestText.ToString());
+            return sb.ToString();
+        }
     }
 }

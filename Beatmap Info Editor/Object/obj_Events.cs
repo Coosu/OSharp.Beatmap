@@ -10,5 +10,9 @@ namespace Editor.Object
     {
         // 先鸽，忘记了某些参数意义
         public string TheRestText { get; set; }
+        public override string ToString()
+        {
+            return "[Events]" + Environment.NewLine + TheRestText;
+        }
     }
 }

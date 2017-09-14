@@ -59,5 +59,11 @@ namespace Editor.Object
         public bool Kiai { get; set; }
 
         private int rhythm;
+
+        public override string ToString()
+        {
+            return Offset + "," + Factor + "," + Rhythm + "," + ((int)SampleSet + 1) + "," +
+                Track + "," + Volume + "," + Convert.ToInt32(!Inherit) + "," + Convert.ToInt32(Kiai);
+        }
     }
 }

@@ -13,5 +13,10 @@ namespace Editor.Object
         public int Offset { get; set; }
         // 剩下的鸽爆，没必要
         public string TheRestText { get; set; }
+
+        public override string ToString()
+        {
+            return X + "," + Y + "," + Offset + "," + TheRestText;
+        }
     }
 }

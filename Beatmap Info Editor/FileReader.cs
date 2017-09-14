@@ -23,8 +23,7 @@ namespace Editor
                 Matching(of, line);
                 line = sr.ReadLine();
             }
-            Console.WriteLine(of.General.ToString());
-            Console.WriteLine(of.Colours.ToString());
+            Console.WriteLine(of.ToString());
             sr.Close();
             return of;
         }
@@ -284,7 +283,7 @@ namespace Editor
                 X = int.Parse(param[0]),
                 Y = int.Parse(param[1]),
                 Offset = int.Parse(param[2]),
-                TheRestText = line.Replace(param[0] + "," + param[0] + "," + param[0] + ",", "")
+                TheRestText = line.Replace(param[0] + "," + param[1] + "," + param[2] + ",", "")
         });
         }
 }

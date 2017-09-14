@@ -30,7 +30,9 @@ namespace Editor.Object
             for (int i = 0; i < list.Length - 1; i++)
             {
                 if (list[i].PropertyType == typeof(bool))
-                    sb.AppendLine(list[i].Name + ": " + int.Parse(list[i].GetValue(this).ToString())); //
+                    sb.AppendLine(list[i].Name + ": " + Convert.ToInt32(list[i].GetValue(this)));
+                else if (list[i].PropertyType == typeof(_Mode))
+                    sb.AppendLine(list[i].Name + ": " + (int)list[i].GetValue(this));
                 else
                     sb.AppendLine(list[i].Name + ": " + list[i].GetValue(this));
             }

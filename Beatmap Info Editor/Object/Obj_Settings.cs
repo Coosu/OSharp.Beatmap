@@ -18,5 +18,11 @@ namespace Editor.Object
         public obj_Colours Colours { get; set; }
         public obj_HitObjects HitObjects { get; set; }
         public string TheRestText { get; set; }
+
+        public override string ToString()
+        {
+            return "osu file format v" + Version.ToString() + Environment.NewLine + TheRestText + General + Editor + Metadata +
+                Difficulty + Events + TimingPoints + Colours + HitObjects + TheRestText;
+        }
     }
 }
