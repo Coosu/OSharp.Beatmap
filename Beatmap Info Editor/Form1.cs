@@ -23,5 +23,21 @@ namespace Editor
             OsuFile x = new OsuFile();
             x = OsuFileReader.ReadFromFile(@"test.osu");
         }
+
+        private void openNewFileToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            var FileDialog = new OpenFileDialog()
+            {
+                Filter = "osb file|*.osb|osu file|*.osu|All types|*.*",
+                FileName = "",
+                CheckFileExists = true,
+                ValidateNames = true
+            };
+            if (FileDialog.ShowDialog() == DialogResult.OK)
+            {
+                txtRoot.Text = FileDialog.FileName;
+                button1_Click(sender, e);
+            }
+        }
     }
 }
