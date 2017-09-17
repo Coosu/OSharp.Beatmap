@@ -9,7 +9,7 @@ using Editor.Object;
 
 namespace Editor
 {
-    class FileContainer
+    public class FileContainer
     {
         public List<OsuFile> FileList { get; set; }
 

@@ -14,7 +14,7 @@ namespace Editor
 {
     public partial class Form1 : Form
     {
-        FileContainer FC;
+        FileContainer fc;
         public Form1()
         {
             InitializeComponent();
@@ -36,24 +36,29 @@ namespace Editor
             };
             if (FileDialog.ShowDialog() == DialogResult.OK)
             {
-                FC = new FileContainer((new FileInfo(FileDialog.FileName)).DirectoryName);
-                Bitmap bmp = new Bitmap(200, 100,System.Drawing.Imaging.PixelFormat.Format32bppArgb);
+                fc = new FileContainer((new FileInfo(FileDialog.FileName)).DirectoryName);
+                Bitmap bmp = new Bitmap(200, 200, System.Drawing.Imaging.PixelFormat.Format32bppArgb);
                 Graphics g = Graphics.FromImage(bmp);
-                g.DrawString(FC.FileList.Count.ToString(), new Font("Arial", 10, FontStyle.Regular), new SolidBrush(Color.Black), 20, 20);
+                g.Clear(Color.White);
+                g.DrawString(fc.FileList.Count.ToString(), new Font("微软雅黑", 10, FontStyle.Regular), new SolidBrush(Color.Black), 20, 20);
 
                 var sb = new StringBuilder();
-                for (int i = 0; i < FC.FileList.Count; i++)
+                for (int i = 0; i < fc.FileList.Count; i++)
                 {
-                    sb.AppendLine((i + 1) + ". " + FC.FileList[i].Metadata.Version);
+                    sb.AppendLine((i + 1) + ". " + fc.FileList[i].Metadata.Version);
                 }
 
-                g.DrawString(FC.FileList.Count.ToString(), new Font("Arial", 10, FontStyle.Regular), new SolidBrush(Color.Black), 20, 40);
-                g.DrawString(sb.ToString(), new Font("Arial", 10, FontStyle.Regular), new SolidBrush(Color.Black), 20, 40);
+                g.DrawString(sb.ToString(), new Font("微软雅黑", 10, FontStyle.Regular), new SolidBrush(Color.Black), 20, 40);
                 g.Dispose();
 
                 BackgroundImage = bmp;
             }
-
+            var tC_Main = new TabControl {
+                Dock = DockStyle.Fill
+            };
+            Controls.Add(tC_Main);
+            var dh = new DataHandler();
+            dh.Compare(fc);
         }
     }
 }

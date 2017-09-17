@@ -49,6 +49,7 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="DataHandler.cs" />
     <Compile Include="FileContainer.cs" />
     <Compile Include="FileReader.cs" />
     <Compile Include="Form1.cs">
@@ -58,6 +59,7 @@
       <DependentUpon>Form1.cs</DependentUpon>
     </Compile>
     <Compile Include="Object\obj_Colours.cs" />
+    <Compile Include="Object\obj_CompareInfo.cs" />
     <Compile Include="Object\obj_Difficulty.cs" />
     <Compile Include="Object\obj_Editor.cs" />
     <Compile Include="Object\obj_Events.cs" />
@@ -98,6 +100,9 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="App.config" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="bin\Debug\SecurityAndMaintenance.png" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>
