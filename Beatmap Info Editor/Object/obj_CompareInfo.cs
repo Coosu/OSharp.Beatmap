@@ -10,7 +10,7 @@ namespace Editor.Object
     {
         public string Name { get; set; }
         public bool Same { get; set; }
-        public List<obj_DifferentInfo> DifferentInfo { get; set; }
+        public List<obj_DifferentInfo> DifferentInfo { get; set; } = new List<obj_DifferentInfo>();
     }
     public class obj_DifferentInfo
     {
