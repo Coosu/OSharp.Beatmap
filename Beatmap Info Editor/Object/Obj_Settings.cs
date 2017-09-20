@@ -19,6 +19,16 @@ namespace Editor.Object
         public obj_HitObjects HitObjects { get; set; }
         public string TheRestText { get; set; }
 
+        public string FileName
+        {
+            get
+            {
+                string title = Metadata.Artist + " - " + Metadata.Title + " (" + Metadata.Creator + ")" +
+                    (Metadata.Version != "" ? " [" + Metadata.Version + "]" : "") + ".osu";
+                return title.Replace(@"\", "").Replace(@"/", "").Replace(@":", "").Replace(@"*", "")
+                    .Replace(@"?", "").Replace("\"", "").Replace(@"<", "").Replace(@">", "").Replace(@"|", "");
+            }
+        }
         public override string ToString()
         {
             return "osu file format v" + Version.ToString() + Environment.NewLine + TheRestText + General + Editor + Metadata +

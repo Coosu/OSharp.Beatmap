@@ -25,6 +25,7 @@ namespace Editor
             }
             Console.WriteLine(of.ToString());
             sr.Close();
+            //GC.Collect();
             return of;
         }
 

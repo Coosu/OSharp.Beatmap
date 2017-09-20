@@ -14,7 +14,7 @@ namespace Editor.Object
     }
     public class obj_DifferentInfo
     {
-        public string Difficulty { get; set; }
+        public List<string> Difficulty { get; set; } = new List<string>();
         public string Information { get; set; }
     }
 }
