@@ -24,12 +24,16 @@ namespace Editor.Object
             get
             {
                 string title = Metadata.Artist + " - " + Metadata.Title + " (" + Metadata.Creator + ")" +
-                    (Metadata.Version != "" ? " [" + Metadata.Version + "]" : "") + ".osu";
+                    (Metadata.Version != "" ? " [" + Metadata.Version + "]" : "");
                 return title.Replace(@"\", "").Replace(@"/", "").Replace(@":", "").Replace(@"*", "")
                     .Replace(@"?", "").Replace("\"", "").Replace(@"<", "").Replace(@">", "").Replace(@"|", "");
             }
         }
         public override string ToString()
+        {
+            return Metadata.Version;
+        }
+        public string ToAllTextString()
         {
             return "osu file format v" + Version.ToString() + Environment.NewLine + TheRestText + General + Editor + Metadata +
                 Difficulty + Events + TimingPoints + Colours + HitObjects + TheRestText;

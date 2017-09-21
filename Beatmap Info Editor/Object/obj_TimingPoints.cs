@@ -15,7 +15,7 @@ namespace Editor.Object
         public override string ToString()
         {
             sb.Clear();
-            sb.AppendLine("[HitObjects]");
+            sb.AppendLine("[TimingPoints]");
             for (int i = 0; i < TimingPointList.Count; i++)
             {
                 sb.AppendLine(TimingPointList[i].ToString());
