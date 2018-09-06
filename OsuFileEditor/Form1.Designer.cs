@@ -1,4 +1,4 @@
-﻿namespace Editor
+﻿namespace OsuFileEditor
 {
     partial class Form1
     {

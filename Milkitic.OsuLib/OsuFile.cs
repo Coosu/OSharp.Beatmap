@@ -6,7 +6,7 @@ using System.Reflection;
 using Milkitic.OsuLib.Interface;
 using Milkitic.OsuLib.Model.Section;
 
-namespace Milkitic.OsuLib.Model
+namespace Milkitic.OsuLib
 {
     public class OsuFile
     {

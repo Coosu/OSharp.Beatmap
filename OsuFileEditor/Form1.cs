@@ -1,22 +1,21 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.ComponentModel;
-using System.Data;
 using System.Drawing;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using System.Windows.Forms;
-using Editor.Object;
 using System.IO;
+using System.Text;
+using System.Windows.Forms;
+using Milkitic.OsuLib;
 
-namespace Editor
+namespace OsuFileEditor
 {
     public partial class Form1 : Form
     {
-        DataHandler dh;
-        FileContainer fc;
-        string dir;
+        private OsuFileManager _fc;
+        private DirectoryInfo _currentPath;
+
+        private const string BackUpFolder = "OsuFileBackup";
+        private const string ToolFolder = "OsuToolTiming";
+
         public Form1()
         {
             InitializeComponent();
@@ -24,16 +23,16 @@ namespace Editor
 
         public void Reload()
         {
-            fc = new FileContainer(dir);
+            _fc = new OsuFileManager(_currentPath.FullName);
             Bitmap bmp = new Bitmap(800, 600, System.Drawing.Imaging.PixelFormat.Format32bppArgb);
             Graphics g = Graphics.FromImage(bmp);
             g.Clear(Color.White);
-            g.DrawString(fc.FileList.Count.ToString(), new Font("Arial", 10, FontStyle.Regular), new SolidBrush(Color.Black), 20, 40);
+            g.DrawString(_fc.FileList.Count.ToString(), new Font("Arial", 10, FontStyle.Regular), new SolidBrush(Color.Black), 20, 40);
 
             var sb = new StringBuilder();
-            for (int i = 0; i < fc.FileList.Count; i++)
+            for (int i = 0; i < _fc.FileList.Count; i++)
             {
-                sb.AppendLine((i + 1) + ". " + fc.FileList[i].Metadata.Version);
+                sb.AppendLine($"{i + 1}. {_fc.FileList[i].Metadata.Version}");
             }
 
             g.DrawString(sb.ToString(), new Font("Arial", 10, FontStyle.Regular), new SolidBrush(Color.Black), 20, 60);
@@ -41,32 +40,9 @@ namespace Editor
 
             BackgroundImage = bmp;
 
-            dh = new DataHandler();
-            dh.Compare(fc);
             var sb2 = new StringBuilder();
-            sb2.AppendLine("一共有" + fc.FileList.Count + "个难度.");
-            for (int i = 0; i < dh.InfoList.Count; i++)
-            {
-                if (dh.InfoList[i].Name != "Tags") continue;
-                else
-                {
-                    if (dh.InfoList[i].Same == true) sb2.AppendLine("每个难度的tags都一样，还行.");
-                    else
-                    {
-                        sb2.AppendLine("这堆难度中tags都不一样的，不改能忍？.");
-                        for (int j = 0; j < dh.InfoList[i].DifferentInfo.Count; j++)
-                        {
-                            sb2.AppendLine((j + 1) + ": ");
-                            for (int k = 0; k < dh.InfoList[i].DifferentInfo[j].Difficulty.Count; k++)
-                            {
-                                sb2.AppendLine("  " + (k == dh.InfoList[i].DifferentInfo[j].Difficulty.Count - 1 ?
-                                    dh.InfoList[i].DifferentInfo[j].Difficulty[k] + ":" : dh.InfoList[i].DifferentInfo[j].Difficulty[k] + "; "));
-                            }
-                            sb2.AppendLine("    " + dh.InfoList[i].DifferentInfo[j].Information);
-                        }
-                    }
-                }
-            }
+            sb2.AppendLine("一共有" + _fc.FileList.Count + "个难度.");
+
             label1.Text = sb2.ToString();
 
             tb_Artist.Top = label1.Bottom + 5;
@@ -97,7 +73,7 @@ namespace Editor
             tabControl1.Visible = true;
             BackColor = Color.White;
             cb_diff.Items.Add("全部");
-            foreach (var item in fc.FileList)
+            foreach (var item in _fc.FileList)
             {
                 cb_diff.Items.Add(item);
             }
@@ -111,16 +87,16 @@ namespace Editor
 
         private void openNewFileToolStripMenuItem_Click(object sender, EventArgs e)
         {
-            var FileDialog = new OpenFileDialog()
+            var fileDialog = new OpenFileDialog
             {
-                Filter = "All types|*.*",
+                Filter = @"All types|*.*",
                 FileName = "",
                 CheckFileExists = true,
                 ValidateNames = true
             };
-            if (FileDialog.ShowDialog() == DialogResult.OK)
+            if (fileDialog.ShowDialog() == DialogResult.OK)
             {
-                dir = (new FileInfo(FileDialog.FileName)).DirectoryName;
+                _currentPath = new FileInfo(fileDialog.FileName).Directory;
                 Reload();
             }
 
@@ -139,7 +115,7 @@ namespace Editor
 
         private void button1_Click(object sender, EventArgs e)
         {
-            foreach (var item in fc.FileList)
+            foreach (var item in _fc.FileList)
             {
                 item.Metadata.Artist = tb_Artist.Text;
                 item.Metadata.ArtistUnicode = tb_UArtist.Text;
@@ -152,14 +128,17 @@ namespace Editor
 
         private void saveFileToolStripMenuItem_Click(object sender, EventArgs e)
         {
-            if (!Directory.Exists(dir + "\\osu_file_backup"))
-                Directory.CreateDirectory(dir + "\\osu_file_backup");
 
-            foreach (var item in fc.FileList)
+            if (!Directory.Exists(Path.Combine(_currentPath.FullName, BackUpFolder)))
+                Directory.CreateDirectory(Path.Combine(_currentPath.FullName, BackUpFolder));
+
+            foreach (var file in _fc.FileList)
             {
-                File.Copy(dir + "\\" + item.FileName + ".osu", dir + "\\osu_file_backup\\" + DateTime.Now.ToLongTimeString().Replace("/", "_").Replace(":", "_")
-                    + " - " + item.FileName + ".bak");
-                File.WriteAllText(dir + "\\" + item.FileName + ".osu", item.ToAllTextString());
+                string oldPath = Path.Combine(_currentPath.FullName, file.FileName);
+                string newPath = Path.Combine(_currentPath.FullName, BackUpFolder + DateTime.Now.ToString("MMddHHmmss"),
+                    file.FileName);
+                File.Copy(oldPath, newPath);
+                file.GenerateFile(Path.Combine(_currentPath.FullName, file.FileName));
             }
             Reload();
         }
@@ -209,52 +188,32 @@ namespace Editor
         {
             int startTime = int.Parse(tb_start.Text), endTime = int.Parse(tb_end.Text), step = int.Parse(tb_step.Text);
 
-            if (!Directory.Exists(dir + "\\osu_tool_timing"))
-                Directory.CreateDirectory(dir + "\\osu_tool_timing");
+            if (!Directory.Exists(Path.Combine(_currentPath.FullName, ToolFolder)))
+                Directory.CreateDirectory(Path.Combine(_currentPath.FullName, ToolFolder));
 
-            if (cb_diff.SelectedIndex == 0)
+            List<OsuFile> newFiles = new List<OsuFile>();
+            newFiles.AddRange(cb_diff.SelectedIndex == 0
+                ? _fc.FileList
+                : new List<OsuFile> {(OsuFile) cb_diff.SelectedItem});
+            
+            foreach (var file in newFiles)
             {
-                foreach (var item in fc.FileList)
-                {
-                    var times = (int)((endTime - startTime) / (double)step);
-                    var diff = item.Metadata.Version;
-                    for (int i = 0; i < times; i++)
-                    {
-                        foreach (var timing in item.TimingPoints.TimingPointList)
-                        {
-                            if (i == 0) timing.Offset += startTime;
-                            else timing.Offset += step;
-                        }
-                        foreach (var hitObject in item.HitObjects.HitObjectList)
-                        {
-                            if (i == 0) hitObject.Offset += startTime;
-                            else hitObject.Offset += step;
-                        }
-                        item.Metadata.Version = diff + " " +( startTime + i * step )+ "ms";
-                        File.WriteAllText(dir + "\\osu_tool_timing\\" + item.FileName + ".osu", item.ToAllTextString());
-                    }
-                  
-                }
-            }
-            else
-            {
-                OsuFile item = (OsuFile)cb_diff.SelectedItem;
                 int times = (int)((endTime - startTime) / (double)step);
-                var diff = item.Metadata.Version;
+                var diff = file.Metadata.Version;
                 for (int i = 0; i < times; i++)
                 {
-                    foreach (var timing in item.TimingPoints.TimingPointList)
+                    foreach (var timing in file.TimingPoints.TimingList)
                     {
                         if (i == 0) timing.Offset += startTime;
                         else timing.Offset += step;
                     }
-                    foreach (var hitObject in item.HitObjects.HitObjectList)
+                    foreach (var hitObject in file.HitObjects.HitObjectList)
                     {
                         if (i == 0) hitObject.Offset += startTime;
                         else hitObject.Offset += step;
                     }
-                    item.Metadata.Version = diff + " " + (startTime + i * step) + "ms";
-                    File.WriteAllText(dir + "\\osu_tool_timing\\" + item.FileName + ".osu", item.ToAllTextString());
+                    file.Metadata.Version = diff + " " + (startTime + i * step) + "ms";
+                    file.GenerateFile(Path.Combine(_currentPath.FullName, ToolFolder, file.FileName));
                 }
             }
         }

@@ -61,7 +61,7 @@
     <Compile Include="Model\Section\HitObjects.cs" />
     <Compile Include="Interface\KeyValueSection.cs" />
     <Compile Include="Model\Section\Metadata.cs" />
-    <Compile Include="Model\OsuFile.cs" />
+    <Compile Include="OsuFile.cs" />
     <Compile Include="Model\Section\TimingPoints.cs" />
     <Compile Include="Model\Raw\RawHitObject.cs" />
     <Compile Include="Enums\GameModeEnum.cs" />

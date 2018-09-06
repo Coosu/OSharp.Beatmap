@@ -3,7 +3,7 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio 15
 VisualStudioVersion = 15.0.26730.12
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Beatmap Info Editor", "Beatmap Info Editor\Beatmap Info Editor.csproj", "{04762098-408A-4E5D-BDA7-7B2BFD25E5E5}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "OsuFileEditor", "OsuFileEditor\OsuFileEditor.csproj", "{04762098-408A-4E5D-BDA7-7B2BFD25E5E5}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Milkitic.OsuLib", "Milkitic.OsuLib\Milkitic.OsuLib.csproj", "{C86D348D-A961-456B-9820-0BD9F069A9CB}"
 EndProject
