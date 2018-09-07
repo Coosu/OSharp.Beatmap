@@ -6,11 +6,8 @@ using System.Threading.Tasks;
 
 namespace Milkitic.OsuLib.Enums
 {
-    public enum SampleAdditonEnum
+    public enum SliderTypeEnum
     {
-        Auto,
-        Normal,
-        Soft,
-        Drum
+        Linear, Perfect, Bezier, Catmull
     }
 }

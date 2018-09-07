@@ -2,6 +2,15 @@
 
 namespace Milkitic.OsuLib.Model
 {
+    public class ConfigNameAttribute : Attribute
+    {
+        public string Name { get; }
+
+        public ConfigNameAttribute(string name)
+        {
+            Name = name;
+        }
+    }
     public class ConfigEnumAttribute : Attribute
     {
         public EnumParseType Type { get; }

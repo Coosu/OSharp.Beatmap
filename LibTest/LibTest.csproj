@@ -4,10 +4,10 @@
   <PropertyGroup>
     <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
     <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
-    <ProjectGuid>{C86D348D-A961-456B-9820-0BD9F069A9CB}</ProjectGuid>
-    <OutputType>Library</OutputType>
-    <RootNamespace>Milkitic.OsuLib</RootNamespace>
-    <AssemblyName>OsuLib</AssemblyName>
+    <ProjectGuid>{46D20BEE-202D-4A59-AA12-B8623B182A32}</ProjectGuid>
+    <OutputType>Exe</OutputType>
+    <RootNamespace>LibTest</RootNamespace>
+    <AssemblyName>LibTest</AssemblyName>
     <TargetFrameworkVersion>v4.5.2</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
     <AutoGenerateBindingRedirects>true</AutoGenerateBindingRedirects>
@@ -19,11 +19,9 @@
     <DebugType>full</DebugType>
     <Optimize>false</Optimize>
     <OutputPath>bin\Debug\</OutputPath>
-    <DefineConstants>TRACE;DEBUG</DefineConstants>
+    <DefineConstants>DEBUG;TRACE</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
-    <RunCodeAnalysis>false</RunCodeAnalysis>
-    <LangVersion>7.3</LangVersion>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
     <PlatformTarget>AnyCPU</PlatformTarget>
@@ -33,18 +31,10 @@
     <DefineConstants>TRACE</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
-    <LangVersion>7.3</LangVersion>
-  </PropertyGroup>
-  <PropertyGroup>
-    <StartupObject />
   </PropertyGroup>
   <ItemGroup>
     <Reference Include="System" />
     <Reference Include="System.Core" />
-    <Reference Include="System.Drawing" />
-    <Reference Include="System.ValueTuple, Version=4.0.1.0, Culture=neutral, PublicKeyToken=cc7b13ffcd2ddd51, processorArchitecture=MSIL">
-      <HintPath>..\..\..\Player\packages\System.ValueTuple.4.3.0\lib\netstandard1.0\System.ValueTuple.dll</HintPath>
-    </Reference>
     <Reference Include="System.Xml.Linq" />
     <Reference Include="System.Data.DataSetExtensions" />
     <Reference Include="Microsoft.CSharp" />
@@ -53,35 +43,17 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="Enums\EnumExtension.cs" />
-    <Compile Include="Enums\HitsoundType.cs" />
-    <Compile Include="Enums\ObjectType.cs" />
-    <Compile Include="Enums\RawObjectType.cs" />
-    <Compile Include="Enums\SampleAdditonEnum.cs" />
-    <Compile Include="Enums\SliderTypeEnum.cs" />
-    <Compile Include="Model\SliderInfo.cs" />
-    <Compile Include="OsuFileManager.cs" />
-    <Compile Include="Interface\ISection.cs" />
-    <Compile Include="Model\Attributes.cs" />
-    <Compile Include="Model\Section\Colours.cs" />
-    <Compile Include="Model\Section\Difficulty.cs" />
-    <Compile Include="Model\Section\Editor.cs" />
-    <Compile Include="Model\Section\Events.cs" />
-    <Compile Include="Model\Section\General.cs" />
-    <Compile Include="Model\Section\HitObjects.cs" />
-    <Compile Include="Interface\KeyValueSection.cs" />
-    <Compile Include="Model\Section\Metadata.cs" />
-    <Compile Include="OsuFile.cs" />
-    <Compile Include="Model\Section\TimingPoints.cs" />
-    <Compile Include="Model\Raw\RawHitObject.cs" />
-    <Compile Include="Enums\GameModeEnum.cs" />
-    <Compile Include="Enums\SamplesetEnum.cs" />
-    <Compile Include="Model\Raw\RawTimingPoint.cs" />
+    <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="App.config" />
-    <None Include="packages.config" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\Milkitic.OsuLib\Milkitic.OsuLib.csproj">
+      <Project>{c86d348d-a961-456b-9820-0bd9f069a9cb}</Project>
+      <Name>Milkitic.OsuLib</Name>
+    </ProjectReference>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>

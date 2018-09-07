@@ -1,10 +1,10 @@
-﻿using System;
+﻿using Milkitic.OsuLib.Interface;
+using Milkitic.OsuLib.Model.Section;
+using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Reflection;
-using Milkitic.OsuLib.Interface;
-using Milkitic.OsuLib.Model.Section;
 
 namespace Milkitic.OsuLib
 {
@@ -38,9 +38,13 @@ namespace Milkitic.OsuLib
                     if (currentSecion != null)
                         t.First(p => p.Name == currentSecion.GetType().Name).SetValue(this, currentSecion);
 
+
                     if (t.Select(p => p.Name).Contains(sectionName))
                     {
-                        currentSecion = Activator.CreateInstance(t.First(p => p.Name == sectionName).PropertyType) as ISection;
+                        var type = t.First(p => p.Name == sectionName).PropertyType;
+                        object[] args = { };
+                        if (type == typeof(HitObjects)) args = new object[] { this };
+                        currentSecion = Activator.CreateInstance(type, args) as ISection;
                     }
                     else
                         throw new NullReferenceException("Unknown section: " + sectionName);
@@ -68,83 +72,6 @@ namespace Milkitic.OsuLib
 
             if (currentSecion != null)
                 t.First(p => p.Name == currentSecion.GetType().Name).SetValue(this, currentSecion);
-        }
-
-        /// <summary>
-        /// 获取当前bpm的节奏的间隔
-        /// </summary>
-        /// <param name="multiple">multiple: 1, 0.5, 1/3d, etc.</param>
-        /// <returns></returns>
-        public Dictionary<double, double> GetInterval(double multiple)
-        {
-            return TimingPoints.TimingList.Where(t => !t.Inherit).OrderBy(t => t.Offset)
-                .ToDictionary(k => k.Offset, v => 60000 / v.Bpm * multiple);
-        }
-
-        public double[] GetTimings(double multiple)
-        {
-            var array = TimingPoints.TimingList.Where(t => !t.Inherit).OrderBy(t => t.Offset).ToArray();
-            var list = new List<double>();
-
-            for (int i = 0; i < array.Length; i++)
-            {
-                decimal nextTime = Convert.ToDecimal(i == array.Length - 1 ? MaxTime : array[i + 1].Offset);
-                var t = array[i];
-                decimal decBpm = Convert.ToDecimal(t.Bpm);
-                decimal decMult = Convert.ToDecimal(multiple);
-                decimal interval = 60000 / decBpm * decMult;
-                decimal current = Convert.ToDecimal(t.Offset);
-                while (current < nextTime)
-                {
-                    list.Add(Convert.ToDouble(current));
-                    current += interval;
-                }
-            }
-
-            return list.ToArray();
-        }
-
-        public double[] GetTimingBars()
-        {
-            var array = TimingPoints.TimingList.Where(t => !t.Inherit).OrderBy(t => t.Offset).ToArray();
-            var list = new List<double>();
-
-            for (int i = 0; i < array.Length; i++)
-            {
-                decimal nextTime = Convert.ToDecimal(i == array.Length - 1 ? MaxTime : array[i + 1].Offset);
-                var t = array[i];
-                decimal decBpm = Convert.ToDecimal(t.Bpm);
-                decimal decMult = Convert.ToDecimal(t.Rhythm);
-                decimal interval = 60000 / decBpm * decMult;
-                decimal current = Convert.ToDecimal(t.Offset);
-                while (current < nextTime)
-                {
-                    list.Add(Convert.ToDouble(current));
-                    current += interval;
-                }
-            }
-
-            return list.ToArray();
-        }
-
-        public TimeRange[] GetTimingKiais()
-        {
-            var array = TimingPoints.TimingList;
-            var list = new List<TimeRange>();
-            double? tmpKiai = null;
-            foreach (var t in array)
-            {
-                if (t.Kiai && tmpKiai == null)
-                    tmpKiai = t.Offset;
-                else if (!t.Kiai && tmpKiai != null)
-                {
-                    list.Add(new TimeRange(tmpKiai.Value, t.Offset));
-                    tmpKiai = null;
-                }
-            }
-            if (tmpKiai != null)
-                list.Add(new TimeRange(tmpKiai.Value, MaxTime));
-            return list.ToArray();
         }
 
         public struct TimeRange

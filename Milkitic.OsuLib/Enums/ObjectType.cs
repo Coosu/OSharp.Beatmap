@@ -6,11 +6,12 @@ using System.Threading.Tasks;
 
 namespace Milkitic.OsuLib.Enums
 {
-    public enum SampleAdditonEnum
+    public enum ObjectType
     {
-        Auto,
-        Normal,
-        Soft,
-        Drum
+        Circle,
+        Slider,
+        NewCombo,
+        Spinner,
+        Hold
     }
 }

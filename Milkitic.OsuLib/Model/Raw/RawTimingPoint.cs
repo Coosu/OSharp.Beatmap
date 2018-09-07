@@ -21,7 +21,7 @@ namespace Milkitic.OsuLib.Model.Raw
         }
         public double Multiple //计算属性
         {
-            get => Inherit ? Math.Round(100d / Math.Abs(Factor), 2) : -1;
+            get => Inherit ? Math.Round(100d / Math.Abs(Factor), 2) : 1;
             set
             {
                 if (Inherit)
@@ -29,8 +29,7 @@ namespace Milkitic.OsuLib.Model.Raw
                 else throw new Exception("The current timing point is not inherited.");
             }
         }
-
-        // 先鸽3个参数，忘了意义
+        
         public int Rhythm
         {
             get => _rhythm;
@@ -40,7 +39,7 @@ namespace Milkitic.OsuLib.Model.Raw
                 _rhythm = value;
             }
         }
-        public SampleAdditonEnum SampleAdditonEnum { get; set; }
+        public SamplesetEnum SamplesetEnum { get; set; }
         public int Track { get; set; }
         public int Volume { get; set; }
         public bool Inherit { get; set; }
@@ -50,6 +49,6 @@ namespace Milkitic.OsuLib.Model.Raw
 
         public override string ToString() => string.Format("{0},{1},{2},{3},{4},{5},{6},{7}", Offset,
             Factor.ToString(CultureInfo.InvariantCulture), Rhythm,
-            (int)SampleAdditonEnum + 1, Track, Volume, Convert.ToInt32(!Inherit), Convert.ToInt32(Kiai));
+            (int)SamplesetEnum + 1, Track, Volume, Convert.ToInt32(!Inherit), Convert.ToInt32(Kiai));
     }
 }

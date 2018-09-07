@@ -6,11 +6,12 @@ using System.Threading.Tasks;
 
 namespace Milkitic.OsuLib.Enums
 {
-    public enum SampleAdditonEnum
+    [Flags]
+    public enum HitsoundType
     {
-        Auto,
-        Normal,
-        Soft,
-        Drum
+        Normal = 1,
+        Whistle = 2,
+        Finish = 4,
+        Clap = 8,
     }
 }
