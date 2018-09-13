@@ -8,7 +8,7 @@ namespace Milkitic.OsuLib.Model.Raw
     {
         public bool Positive { get; set; }
         public double Offset { get; set; }
-        public double Factor { get; set; }
+        public double Factor { get; set; } // 一拍的ms
         public double Bpm //计算属性
         {
             get => Inherit ? -1 : Math.Round(60000d / Factor, 3);
@@ -38,7 +38,7 @@ namespace Milkitic.OsuLib.Model.Raw
                 if (value < 1 || value > 7) value = 4; //此处待定
                 _rhythm = value;
             }
-        }
+        } // 1/4, 2/4, 3/4, 4/4, etc ..
         public SamplesetEnum SamplesetEnum { get; set; }
         public int Track { get; set; }
         public int Volume { get; set; }

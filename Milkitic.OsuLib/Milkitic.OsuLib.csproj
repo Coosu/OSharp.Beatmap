@@ -59,6 +59,10 @@
     <Compile Include="Enums\RawObjectType.cs" />
     <Compile Include="Enums\SampleAdditonEnum.cs" />
     <Compile Include="Enums\SliderTypeEnum.cs" />
+    <Compile Include="Exception.cs" />
+    <Compile Include="Model\BackgroundInfo.cs" />
+    <Compile Include="Model\SbSampleInfo.cs" />
+    <Compile Include="Model\VideoInfo.cs" />
     <Compile Include="Model\SliderInfo.cs" />
     <Compile Include="OsuFileManager.cs" />
     <Compile Include="Interface\ISection.cs" />

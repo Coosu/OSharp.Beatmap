@@ -44,8 +44,16 @@ namespace Milkitic.OsuLib.Model.Raw
         public SampleAdditonEnum SampleSet => Extras?.Split(':')[0].ParseToEnum<SampleAdditonEnum>() ?? default;
         public SampleAdditonEnum AdditionSet => Extras?.Split(':')[1].ParseToEnum<SampleAdditonEnum>() ?? default;
         public int CustomIndex => Extras == null ? 0 : int.Parse(Extras.Split(':')[2]);
-        public int SampleVolume => Extras == null ? 0 : int.Parse(Extras.Split(':')[3]);
-        public string FileName => Extras == null ? "" : Extras.Split(':')[4];
+        public int SampleVolume => Extras == null
+            ? 0
+            : (Extras.Split(':').Length > 3
+                ? int.Parse(Extras.Split(':')[3])
+                : 0);
+        public string FileName => Extras == null
+            ? ""
+            : (Extras.Split(':').Length > 4
+                ? Extras.Split(':')[4]
+                : "");
         public string NotImplementedInfo { get; set; }
 
         public override string ToString() => $"{X},{Y},{Offset},{NotImplementedInfo}";

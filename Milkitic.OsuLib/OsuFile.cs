@@ -47,7 +47,7 @@ namespace Milkitic.OsuLib
                         currentSecion = Activator.CreateInstance(type, args) as ISection;
                     }
                     else
-                        throw new NullReferenceException("Unknown section: " + sectionName);
+                        throw new BadOsuFormatException("存在未知的节点: " + sectionName);
                 }
                 else
                 {
@@ -55,14 +55,14 @@ namespace Milkitic.OsuLib
                     {
                         case null when line.StartsWith(verFlag):
                             var str = line.Replace(verFlag, "");
-                            if (!int.TryParse(str, out var num))
-                                throw new FormatException("Unknown osu file version: " + str);
-                            if (num < 7)
-                                throw new NotSupportedException("尚不支持 " + verFlag + num);
-                            Version = num;
+                            if (!int.TryParse(str, out var verNum))
+                                throw new BadOsuFormatException("未知的osu版本: " + str);
+                            if (verNum < 7)
+                                throw new VersionNotSupportedException(verNum);
+                            Version = verNum;
                             break;
                         case null:
-                            throw new NullReferenceException("Line is not in any sections: " + line);
+                            throw new BadOsuFormatException("存在问题头声明: " + line);
                         default:
                             currentSecion.Match(line);
                             break;

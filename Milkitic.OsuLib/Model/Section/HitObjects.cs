@@ -121,15 +121,34 @@ namespace Milkitic.OsuLib.Model.Section
                     edgeAdditions[i] = sampAdd[1].ParseToEnum<SampleAdditonEnum>();
                 }
             }
-            double lastRedLineOffset = _timingPoints.TimingList.Where(t => !t.Inherit).Where(t => t.Offset <= hitObject.Offset)
-                .Max(t => t.Offset);
-            var lastRedLine = _timingPoints.TimingList.First(t => t.Offset == lastRedLineOffset && !t.Inherit);
 
-            double lastLineOffset = _timingPoints.TimingList.Where(t => t.Offset <= hitObject.Offset)
-                .Max(t => t.Offset);
-            var lastLines = _timingPoints.TimingList.Where(t => t.Offset == lastLineOffset).ToArray();
+            RawTimingPoint[] lastRedLinesIfExsist = _timingPoints.TimingList.Where(t => !t.Inherit)
+                .Where(t => t.Offset <= hitObject.Offset).ToArray();
+            RawTimingPoint lastRedLine;
 
+            // hitobjects before lines is allowed
+            if (lastRedLinesIfExsist.Length == 0)
+                lastRedLine = _timingPoints.TimingList.First(t => !t.Inherit);
+            else
+            {
+                double lastRedLineOffset = lastRedLinesIfExsist.Max(t => t.Offset);
+                lastRedLine = _timingPoints.TimingList.First(t => t.Offset == lastRedLineOffset && !t.Inherit);
+            }
+
+            RawTimingPoint[] lastLinesIfExist = _timingPoints.TimingList.Where(t => t.Offset <= hitObject.Offset).ToArray();
+            RawTimingPoint[] lastLines; // 1 red + 1 green is allowed
             RawTimingPoint lastLine;
+
+            // hitobjects before lines is allowed
+            if (lastLinesIfExist.Length == 0)
+                lastLines = new[] { _timingPoints.TimingList.First(t => !t.Inherit) };
+            else
+            {
+                double lastLineOffset = lastLinesIfExist.Max(t => t.Offset);
+                // 1 red + 1 green is allowed, so maybe here are two results
+                lastLines = _timingPoints.TimingList.Where(t => t.Offset == lastLineOffset).ToArray();
+            }
+
             if (lastLines.Length > 1)
             {
                 if (lastLines.Length == 2)
@@ -139,10 +158,10 @@ namespace Milkitic.OsuLib.Model.Section
                         lastLine = lastLines.First(t => t.Inherit);
                     }
                     else
-                        throw new FormatException("Bad osu format.");
+                        throw new MultiTimingSectionException("存在同一时刻两条相同类型的Timing Section。");
                 }
                 else
-                    throw new FormatException("Bad osu format.");
+                    throw new MultiTimingSectionException("存在同一时刻多条Timing Section。");
             }
             else
                 lastLine = lastLines[0];

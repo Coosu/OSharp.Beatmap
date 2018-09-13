@@ -1,6 +1,6 @@
-﻿using System.Collections.Generic;
+﻿using Milkitic.OsuLib.Interface;
+using System.Collections.Generic;
 using System.Linq;
-using Milkitic.OsuLib.Interface;
 
 namespace Milkitic.OsuLib.Model.Section
 {
@@ -22,5 +22,33 @@ namespace Milkitic.OsuLib.Model.Section
         public List<string> TagList { get; private set; }
         public int BeatmapID { get; set; }
         public int BeatmapSetID { get; set; }
+
+        public string GetUnicodeTitle()
+        {
+            return string.IsNullOrEmpty(TitleUnicode)
+                ? (string.IsNullOrEmpty(Title) ? "" : Title)
+                : TitleUnicode;
+        }
+
+        public string GetUnicodeArtist()
+        {
+            return string.IsNullOrEmpty(ArtistUnicode)
+                ? (string.IsNullOrEmpty(Artist) ? "" : Artist)
+                : ArtistUnicode;
+        }
+
+        public string GetOriginalTitle()
+        {
+            return string.IsNullOrEmpty(Title)
+                ? (string.IsNullOrEmpty(TitleUnicode) ? "" : TitleUnicode)
+                : Title;
+        }
+
+        public string GetOriginalArtist()
+        {
+            return string.IsNullOrEmpty(Artist)
+                ? (string.IsNullOrEmpty(ArtistUnicode) ? "" : ArtistUnicode)
+                : Artist;
+        }
     }
 }

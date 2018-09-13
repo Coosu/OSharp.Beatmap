@@ -89,10 +89,10 @@ namespace Milkitic.OsuLib.Model.Section
                         point = points.First(t => t.Inherit);
                     }
                     else
-                        throw new FormatException("Bad osu format.");
+                        throw new MultiTimingSectionException("存在同一时刻两条相同类型的Timing Section。");
                 }
                 else
-                    throw new FormatException("Bad osu format.");
+                    throw new MultiTimingSectionException("存在同一时刻多条Timing Section。");
             }
             else
                 point = points[0];
