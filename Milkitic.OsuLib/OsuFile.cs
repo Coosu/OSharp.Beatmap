@@ -100,6 +100,8 @@ namespace Milkitic.OsuLib
 
         public string FileName => Escape(string.Format("{0} - {1} ({2}){3}.osu", Metadata.Artist, Metadata.Title,
             Metadata.Creator, Metadata.Version != "" ? " [" + Metadata.Version + "]" : ""));
+        public string OsbFileName => Escape(string.Format("{0} - {1} ({2}).osb", Metadata.Artist, Metadata.Title,
+            Metadata.Creator));
 
         private static string Escape(string source)
         {

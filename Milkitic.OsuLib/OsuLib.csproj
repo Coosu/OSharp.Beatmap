@@ -87,5 +87,11 @@
     <None Include="App.config" />
     <None Include="packages.config" />
   </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\..\OsbLib\OsbLib\OsbLib.csproj">
+      <Project>{39f7e783-f770-47d0-bfbb-49bc30443b3e}</Project>
+      <Name>OsbLib</Name>
+    </ProjectReference>
+  </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>

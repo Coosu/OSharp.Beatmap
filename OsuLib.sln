@@ -9,6 +9,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Milkitic.OsuLib", "Milkitic
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "LibTest", "LibTest\LibTest.csproj", "{46D20BEE-202D-4A59-AA12-B8623B182A32}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "OsbLib", "..\OsbLib\OsbLib\OsbLib.csproj", "{39F7E783-F770-47D0-BFBB-49BC30443B3E}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -27,6 +29,10 @@ Global
 		{46D20BEE-202D-4A59-AA12-B8623B182A32}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{46D20BEE-202D-4A59-AA12-B8623B182A32}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{46D20BEE-202D-4A59-AA12-B8623B182A32}.Release|Any CPU.Build.0 = Release|Any CPU
+		{39F7E783-F770-47D0-BFBB-49BC30443B3E}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{39F7E783-F770-47D0-BFBB-49BC30443B3E}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{39F7E783-F770-47D0-BFBB-49BC30443B3E}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{39F7E783-F770-47D0-BFBB-49BC30443B3E}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

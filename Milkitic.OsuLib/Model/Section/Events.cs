@@ -1,4 +1,5 @@
-﻿using Milkitic.OsuLib.Interface;
+﻿using Milkitic.OsbLib;
+using Milkitic.OsuLib.Interface;
 using System;
 using System.Collections.Generic;
 using System.Globalization;
@@ -13,6 +14,7 @@ namespace Milkitic.OsuLib.Model.Section
         public VideoInfo VideoInfo { get; set; }
         public List<SbSampleInfo> SampleInfo { get; set; } = new List<SbSampleInfo>();
         public List<OsuFile.TimeRange> Breaks { get; set; } = new List<OsuFile.TimeRange>();
+        public ElementGroup ElementGroup { get; set; }
 
         private readonly StringBuilder _sbInfo = new StringBuilder();
         private readonly Dictionary<string, StringBuilder> _unknownSection = new Dictionary<string, StringBuilder>();
@@ -37,7 +39,7 @@ namespace Milkitic.OsuLib.Model.Section
                         _currentSection = SectionBreak;
                         break;
                     case SectionSbSamples:
-                        //todo: use OsbLib like: "ElementGroup eg = new ElementGroup(_sbInfo.ToString());"
+                        ElementGroup = ElementGroup.Parse(_sbInfo.ToString().Trim('\r', '\n'), 0);
                         _currentSection = SectionSbSamples;
                         break;
                     default:
