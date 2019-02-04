@@ -1,9 +1,8 @@
-﻿using System;
+﻿using OSharp.Beatmap.Sections;
+using System;
 using System.IO;
 using System.Linq;
 using System.Reflection;
-using OSharp.Beatmap.Interface;
-using OSharp.Beatmap.Model.Section;
 
 namespace OSharp.Beatmap
 {
