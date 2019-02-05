@@ -9,10 +9,31 @@ namespace OSharp.Beatmap.Configurable
     public abstract class KeyValueSection : ISection
     {
         [SectionIgnore]
-        public static string KeyValueFlag { get; set; } = ":";
+        public Dictionary<string, string> UndefinedPairs { get; set; }
 
         [SectionIgnore]
-        public Dictionary<string, string> UndefinedPairs { get; set; }
+        public List<(PropertyInfo propInfo, string name)> PropertyInfos { get; set; }
+
+        public KeyValueSection()
+        {
+            var type = GetType();
+            PropertyInfos = type.GetProperties(BindingFlags.Public | BindingFlags.Instance)
+                .Where(k => k.GetCustomAttribute<SectionIgnoreAttribute>() == null)
+                .Select(k =>
+                {
+                    var attr = k.GetCustomAttribute<SectionPropertyAttribute>();
+                    return (k, attr == null ? k.Name : attr.Name);
+                })
+                .ToList();
+            PropertyInfos.AddRange(type.GetProperties(BindingFlags.NonPublic | BindingFlags.Instance)
+                .Where(k => k.GetCustomAttribute<SectionPropertyAttribute>() != null)
+                .Select(k =>
+                {
+                    var attr = k.GetCustomAttribute<SectionPropertyAttribute>();
+                    return (k, attr.Name);
+                })
+            );
+        }
 
         public virtual void Match(string line)
         {
@@ -20,11 +41,11 @@ namespace OSharp.Beatmap.Configurable
             if (index == -1)
                 throw new Exception("Unknown Key-Value: " + line);
 
-            var key = line.Substring(0, index);
-            var value = line.Substring(index + 1);
+            var key = line.Substring(0, index).Trim();
+            var value = line.Substring(index + 1).Trim();
 
-            var prop = GetType().GetProperty(key, BindingFlags.Public | BindingFlags.Instance);
-
+            //var prop = GetType().GetProperty(key, BindingFlags.Public | BindingFlags.Instance);
+            var prop = PropertyInfos.FirstOrDefault(k => k.name == key).propInfo;
             if (prop == null)
             {
                 if (UndefinedPairs == null) UndefinedPairs = new Dictionary<string, string>();
@@ -89,6 +110,8 @@ namespace OSharp.Beatmap.Configurable
 
             return sb + "\r\n";
         }
+
+        protected virtual string KeyValueFlag { get; } = ":";
 
         private static object ConvertValue(string value, Type propType)
         {
