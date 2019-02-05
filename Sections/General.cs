@@ -4,31 +4,42 @@ using OSharp.Beatmap.Sections.Timing;
 
 namespace OSharp.Beatmap.Sections
 {
+    [SectionProperty("General")]
     public class General : KeyValueSection
     {
+        [SectionProperty("AudioFilename")]
         public string AudioFilename { get; set; } = "audio.mp3";
 
-        [ConfigBool(BoolParseType.ZeroOne)]
+        [SectionProperty("AudioLeadIn")]
         public int AudioLeadIn { get; set; } = 0;
 
+        [SectionProperty("PreviewTime")]
         public int PreviewTime { get; set; } = 0;
 
-        [ConfigBool(BoolParseType.ZeroOne)]
+        [SectionProperty("Countdown")]
+        [SectionBool(BoolParseOption.ZeroOne)]
         public bool Countdown { get; set; } = true;
 
+        [SectionProperty("SampleSet")]
         public TimingSampleset SampleSet { get; set; } = 0;
+
+        [SectionProperty("StackLeniency")]
         public double StackLeniency { get; set; } = 0.7;
 
-        [ConfigEnum(EnumParseType.Index)]
+        [SectionProperty("Mode")]
+        [SectionEnum(EnumParseOption.Index)]
         public GameMode Mode { get; set; } = 0;
 
-        [ConfigBool(BoolParseType.ZeroOne)]
+        [SectionProperty("LetterboxInBreaks")]
+        [SectionBool(BoolParseOption.ZeroOne)]
         public bool LetterboxInBreaks { get; set; } = false;
 
-        [ConfigBool(BoolParseType.ZeroOne)]
+        [SectionProperty("WidescreenStoryboard")]
+        [SectionBool(BoolParseOption.ZeroOne)]
         public bool WidescreenStoryboard { get; set; } = true;
 
-        [ConfigBool(BoolParseType.ZeroOne)]
+        [SectionProperty("EpilepsyWarning")]
+        [SectionBool(BoolParseOption.ZeroOne)]
         public bool EpilepsyWarning { get; set; } = false;
     }
 }

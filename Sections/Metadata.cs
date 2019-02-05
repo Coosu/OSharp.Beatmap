@@ -4,51 +4,26 @@ using System.Linq;
 
 namespace OSharp.Beatmap.Sections
 {
+    [SectionProperty("Metadata")]
     public class Metadata : KeyValueSection
     {
-        public string Title { get; set; }
-        public string TitleUnicode { get; set; }
-        public string Artist { get; set; }
-        public string ArtistUnicode { get; set; }
-        public string Creator { get; set; }
-        public string Version { get; set; }
-        public string Source { get; set; }
+        [SectionProperty("Title")]         public string Title { get; set; }
+        [SectionProperty("TitleUnicode")]  public string TitleUnicode { get; set; }
+        [SectionProperty("Artist")]        public string Artist { get; set; }
+        [SectionProperty("ArtistUnicode")] public string ArtistUnicode { get; set; }
+        [SectionProperty("Creator")]       public string Creator { get; set; }
+        [SectionProperty("Version")]       public string Version { get; set; }
+        [SectionProperty("Source")]        public string Source { get; set; }
+
+        [SectionProperty("Tags")]
         public string Tags
         {
             get => TagList == null ? "" : string.Join(" ", TagList);
             set => TagList = value.Split(' ').ToList();
         }
-        [ConfigIgnore]
-        public List<string> TagList { get; private set; }
-        public int BeatmapID { get; set; }
-        public int BeatmapSetID { get; set; }
 
-        public string GetUnicodeTitle()
-        {
-            return string.IsNullOrEmpty(TitleUnicode)
-                ? (string.IsNullOrEmpty(Title) ? "" : Title)
-                : TitleUnicode;
-        }
-
-        public string GetUnicodeArtist()
-        {
-            return string.IsNullOrEmpty(ArtistUnicode)
-                ? (string.IsNullOrEmpty(Artist) ? "" : Artist)
-                : ArtistUnicode;
-        }
-
-        public string GetOriginalTitle()
-        {
-            return string.IsNullOrEmpty(Title)
-                ? (string.IsNullOrEmpty(TitleUnicode) ? "" : TitleUnicode)
-                : Title;
-        }
-
-        public string GetOriginalArtist()
-        {
-            return string.IsNullOrEmpty(Artist)
-                ? (string.IsNullOrEmpty(ArtistUnicode) ? "" : ArtistUnicode)
-                : Artist;
-        }
+        [SectionIgnore]                    public List<string> TagList { get; private set; }
+        [SectionProperty("BeatmapID")]     public int BeatmapID { get; set; }
+        [SectionProperty("BeatmapSetID")]  public int BeatmapSetID { get; set; }
     }
 }

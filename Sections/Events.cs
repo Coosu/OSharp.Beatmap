@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
 using System.Text;
+using OSharp.Common.Mathematics;
 
 namespace OSharp.Beatmap.Sections
 {
@@ -12,7 +13,7 @@ namespace OSharp.Beatmap.Sections
         public BackgroundData BackgroundInfo { get; set; }
         public VideoData VideoInfo { get; set; }
         public List<StoryboardSampleData> SampleInfo { get; set; } = new List<StoryboardSampleData>();
-        public List<OsuFile.TimeRange> Breaks { get; set; } = new List<OsuFile.TimeRange>();
+        public List<RangeValue<double>> Breaks { get; set; } = new List<RangeValue<double>>();
         public ElementGroup ElementGroup { get; set; }
 
         private readonly StringBuilder _sbInfo = new StringBuilder();
@@ -88,7 +89,7 @@ namespace OSharp.Beatmap.Sections
                     case SectionBreak:
                         {
                             var infos = line.Split(',');
-                            Breaks.Add(new OsuFile.TimeRange(double.Parse(infos[1]), double.Parse(infos[2])));
+                            Breaks.Add(new RangeValue<double>(double.Parse(infos[1]), double.Parse(infos[2])));
                         }
                         break;
                     case SectionSbSamples:

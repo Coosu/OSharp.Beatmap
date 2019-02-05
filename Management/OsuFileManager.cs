@@ -22,9 +22,9 @@ namespace OSharp.Beatmap.Management
             DirectoryInfo di = new DirectoryInfo(path);
             FileInfo[] files = di.GetFiles("*.osu");
             foreach (var file in files)
-                FileList.Add(new OsuFile(file.FullName));
+                FileList.Add(OsuFile.ReadFromFile(file.FullName));
         }
 
-        public void LoadFromFile(string path) => FileList.Add(new OsuFile(path));
+        public void LoadFromFile(string path) => FileList.Add(OsuFile.ReadFromFile(path));
     }
 }

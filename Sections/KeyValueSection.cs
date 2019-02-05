@@ -9,10 +9,10 @@ namespace OSharp.Beatmap.Sections
 {
     public abstract class KeyValueSection : ISection
     {
-        [ConfigIgnore]
+        [SectionIgnore]
         public static string KeyValueFlag { get; set; } = ":";
 
-        [ConfigIgnore]
+        [SectionIgnore]
         public Dictionary<string, string> UndefinedPairs { get; set; }
 
         public void Match(string line)
@@ -46,7 +46,7 @@ namespace OSharp.Beatmap.Sections
 
         public string ToSerializedString()
         {
-            var props = GetType().GetProperties().Where(p => p.GetCustomAttribute(typeof(ConfigIgnoreAttribute)) == null);
+            var props = GetType().GetProperties().Where(p => p.GetCustomAttribute(typeof(SectionIgnoreAttribute)) == null);
             StringBuilder sb = new StringBuilder($"[{GetType().Name}]\r\n");
 
             foreach (var prop in props)
@@ -61,8 +61,8 @@ namespace OSharp.Beatmap.Sections
                     {
                         switch (info)
                         {
-                            case ConfigEnumAttribute configEnum:
-                                if (configEnum.Type == EnumParseType.Index)
+                            case SectionEnumAttribute configEnum:
+                                if (configEnum.Option == EnumParseOption.Index)
                                     value = (int)value;
                                 break;
                         }
@@ -76,8 +76,8 @@ namespace OSharp.Beatmap.Sections
                     {
                         switch (info)
                         {
-                            case ConfigBoolAttribute configBool:
-                                if (configBool.Type == BoolParseType.ZeroOne)
+                            case SectionBoolAttribute configBool:
+                                if (configBool.Option == BoolParseOption.ZeroOne)
                                     value = Convert.ToInt32(value);
                                 break;
                         }

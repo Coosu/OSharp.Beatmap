@@ -8,7 +8,7 @@ using System.Linq;
 
 namespace OSharp.Beatmap.Sections
 {
-    public class HitObjects : ISection
+    public class HitObjects : ICustomSection
     {
         private readonly TimingPoints _timingPoints;
         private readonly Difficulty _difficulty;

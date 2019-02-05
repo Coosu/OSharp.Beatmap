@@ -1,4 +1,5 @@
-﻿using OSharp.Beatmap.Sections;
+﻿using OSharp.Beatmap.Configurable;
+using OSharp.Beatmap.Sections;
 using System;
 using System.IO;
 using System.Linq;
@@ -6,7 +7,7 @@ using System.Reflection;
 
 namespace OSharp.Beatmap
 {
-    public class OsuFile
+    public class OsuFile : Config
     {
         public int Version { get; set; }
         public General General { get; set; }
@@ -18,108 +19,57 @@ namespace OSharp.Beatmap
         public Colours Colours { get; set; }
         public HitObjects HitObjects { get; set; }
 
-        public double MinTime => Math.Min(HitObjects.MinTime, TimingPoints.MinTime);
-        public double MaxTime => Math.Max(HitObjects.MaxTime, TimingPoints.MaxTime);
-
-        public OsuFile(string filePath)
+        public static OsuFile ReadFromFile(string path)
         {
-            const string verFlag = "osu file format v";
-            string[] lines = File.ReadAllLines(filePath).Where(l => l.Trim() != "").ToArray();
-            PropertyInfo[] t = GetType().GetProperties().Where(p =>
-                p.PropertyType.GetInterfaces().Contains(typeof(ISection)) ||
-                p.PropertyType.BaseType == typeof(KeyValueSection)).ToArray();
-            ISection currentSecion = null;
-            foreach (var line in lines)
+            using (StreamReader sr = new StreamReader(path))
             {
-                if (MatchedSection(line, out var sectionName))
-                {
-                    if (currentSecion != null)
-                        t.First(p => p.Name == currentSecion.GetType().Name).SetValue(this, currentSecion);
-
-
-                    if (t.Select(p => p.Name).Contains(sectionName))
-                    {
-                        var type = t.First(p => p.Name == sectionName).PropertyType;
-                        object[] args = { };
-                        if (type == typeof(HitObjects)) args = new object[] { this };
-                        currentSecion = Activator.CreateInstance(type, args) as ISection;
-                    }
-                    else
-                        throw new BadOsuFormatException("存在未知的节点: " + sectionName);
-                }
-                else
-                {
-                    switch (currentSecion)
-                    {
-                        case null when line.StartsWith(verFlag):
-                            var str = line.Replace(verFlag, "");
-                            if (!int.TryParse(str, out var verNum))
-                                throw new BadOsuFormatException("未知的osu版本: " + str);
-                            if (verNum < 7)
-                                throw new VersionNotSupportedException(verNum);
-                            Version = verNum;
-                            break;
-                        case null:
-                            throw new BadOsuFormatException("存在问题头声明: " + line);
-                        default:
-                            currentSecion.Match(line);
-                            break;
-                    }
-                }
-            }
-
-            if (currentSecion != null)
-                t.First(p => p.Name == currentSecion.GetType().Name).SetValue(this, currentSecion);
-        }
-
-        public struct TimeRange
-        {
-            public double StartTime { get; }
-            public double EndTime { get; }
-
-            public TimeRange(double startTime, double endTime)
-            {
-                StartTime = startTime;
-                EndTime = endTime;
+                return ConfigConvert.DeserializeObject<OsuFile>(sr);
             }
         }
 
-        private static bool MatchedSection(string line, out string sectionName)
-        {
-            if (line.StartsWith("[") && line.EndsWith("]"))
-            {
-                sectionName = line.Substring(1, line.Length - 2);
-                return true;
-            }
-
-            sectionName = null;
-            return false;
-        }
-
-        public string FileName => Escape(string.Format("{0} - {1} ({2}){3}.osu", Metadata.Artist, Metadata.Title,
-            Metadata.Creator, Metadata.Version != "" ? " [" + Metadata.Version + "]" : ""));
-        public string OsbFileName => Escape(string.Format("{0} - {1} ({2}).osb", Metadata.Artist, Metadata.Title,
-            Metadata.Creator));
-
-        private static string Escape(string source)
-        {
-            return source.Replace(@"\", "").Replace(@"/", "").Replace(@":", "").Replace(@"*", "").Replace(@"?", "")
-                .Replace("\"", "").Replace(@"<", "").Replace(@">", "").Replace(@"|", "");
-        }
-
-        public override string ToString()
-        {
-            return Metadata.Version;
-        }
+        public override string ToString() => Path;
 
         //todo: not optimized
-        public void GenerateFile(string path)
+        public void WriteOsuFile(string path)
         {
             File.WriteAllText(path,
                 string.Format("osu file format v{0}\r\n\r\n{1}{2}{3}{4}{5}{6}{7}{8}", Version,
-                    General?.ToSerializedString(), Editor?.ToSerializedString(), Metadata?.ToSerializedString(),
-                    Difficulty?.ToSerializedString(), Events?.ToSerializedString(), TimingPoints?.ToSerializedString(),
-                    Colours?.ToSerializedString(), HitObjects?.ToSerializedString()));
+                    General?.ToSerializedString(),
+                    Editor?.ToSerializedString(),
+                    Metadata?.ToSerializedString(),
+                    Difficulty?.ToSerializedString(),
+                    Events?.ToSerializedString(),
+                    TimingPoints?.ToSerializedString(),
+                    Colours?.ToSerializedString(),
+                    HitObjects?.ToSerializedString()));
         }
+
+        internal override void HandleCustom(string line)
+        {
+            const string verFlag = "osu file format v";
+
+            if (line.StartsWith(verFlag))
+            {
+                var str = line.Replace(verFlag, "");
+                if (!int.TryParse(str, out var verNum))
+                    throw new BadOsuFormatException("未知的osu版本: " + str);
+                if (verNum < 7)
+                    throw new VersionNotSupportedException(verNum);
+                Version = verNum;
+            }
+            else
+            {
+                throw new BadOsuFormatException("存在问题头声明: " + line);
+            }
+        }
+
+        private OsuFile() { }
+
+        private string Path => Common.IO.File.EscapeFileName(string.Format("{0} - {1} ({2}){3}.osu",
+            Metadata.Artist,
+            Metadata.Title,
+            Metadata.Creator,
+            Metadata.Version != "" ? $" [{Metadata.Version}]" : ""));
+
     }
 }

@@ -1,6 +1,6 @@
 ﻿namespace OSharp.Beatmap.Configurable
 {
-    public enum EnumParseType
+    public enum EnumParseOption
     {
         String, Index
     }

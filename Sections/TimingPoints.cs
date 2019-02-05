@@ -2,6 +2,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using OSharp.Common.Mathematics;
 
 namespace OSharp.Beatmap.Sections
 {
@@ -121,10 +122,10 @@ namespace OSharp.Beatmap.Sections
             return list.ToArray();
         }
 
-        public OsuFile.TimeRange[] GetTimingKiais()
+        public RangeValue<double>[] GetTimingKiais()
         {
             var array = TimingList;
-            var list = new List<OsuFile.TimeRange>();
+            var list = new List<RangeValue<double>>();
             double? tmpKiai = null;
             foreach (var t in array)
             {
@@ -132,12 +133,12 @@ namespace OSharp.Beatmap.Sections
                     tmpKiai = t.Offset;
                 else if (!t.Kiai && tmpKiai != null)
                 {
-                    list.Add(new OsuFile.TimeRange(tmpKiai.Value, t.Offset));
+                    list.Add(new RangeValue<double>(tmpKiai.Value, t.Offset));
                     tmpKiai = null;
                 }
             }
             if (tmpKiai != null)
-                list.Add(new OsuFile.TimeRange(tmpKiai.Value, MaxTime));
+                list.Add(new RangeValue<double>(tmpKiai.Value, MaxTime));
             return list.ToArray();
         }
 

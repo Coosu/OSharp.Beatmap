@@ -1,10 +1,12 @@
 ﻿using System.Drawing;
+using OSharp.Beatmap.Configurable;
 
 namespace OSharp.Beatmap.Sections
 {
     /// <summary>
     /// Not implemented
     /// </summary>
+    [SectionProperty("Colours")]
     public class Colours : KeyValueSection
     {
         public Color Combo1 { get; set; }

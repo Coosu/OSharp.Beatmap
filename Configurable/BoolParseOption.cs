@@ -1,6 +1,6 @@
 ﻿namespace OSharp.Beatmap.Configurable
 {
-    public enum BoolParseType
+    public enum BoolParseOption
     {
         String, ZeroOne
     }

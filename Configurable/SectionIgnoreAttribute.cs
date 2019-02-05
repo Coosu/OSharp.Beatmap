@@ -2,7 +2,7 @@
 
 namespace OSharp.Beatmap.Configurable
 {
-    public class ConfigIgnoreAttribute : Attribute
+    public class SectionIgnoreAttribute : Attribute
     {
     }
 }
