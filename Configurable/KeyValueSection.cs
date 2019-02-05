@@ -14,13 +14,14 @@ namespace OSharp.Beatmap.Configurable
         [SectionIgnore]
         public Dictionary<string, string> UndefinedPairs { get; set; }
 
-        public void Match(string line)
+        public virtual void Match(string line)
         {
-            var split = line.Split(new[] { KeyValueFlag }, StringSplitOptions.None);
-            if (split.Length < 2)
+            var index = line.IndexOf(KeyValueFlag, StringComparison.InvariantCulture);
+            if (index == -1)
                 throw new Exception("Unknown Key-Value: " + line);
-            var key = split[0];
-            var value = string.Join(KeyValueFlag, split.Skip(1)).Trim();
+
+            var key = line.Substring(0, index);
+            var value = line.Substring(index + 1);
 
             var prop = GetType().GetProperty(key, BindingFlags.Public | BindingFlags.Instance);
 
@@ -43,7 +44,7 @@ namespace OSharp.Beatmap.Configurable
             }
         }
 
-        public string ToSerializedString()
+        public virtual string ToSerializedString()
         {
             var props = GetType().GetProperties().Where(p => p.GetCustomAttribute(typeof(SectionIgnoreAttribute)) == null);
             StringBuilder sb = new StringBuilder($"[{GetType().Name}]\r\n");
