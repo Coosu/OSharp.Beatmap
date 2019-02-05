@@ -5,6 +5,7 @@ using System;
 using System.Collections.Generic;
 using System.Drawing;
 using System.Linq;
+using OSharp.Beatmap.Configurable;
 
 namespace OSharp.Beatmap.Sections
 {

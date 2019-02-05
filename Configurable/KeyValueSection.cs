@@ -3,9 +3,8 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
 using System.Text;
-using OSharp.Beatmap.Configurable;
 
-namespace OSharp.Beatmap.Sections
+namespace OSharp.Beatmap.Configurable
 {
     public abstract class KeyValueSection : ISection
     {
@@ -17,11 +16,11 @@ namespace OSharp.Beatmap.Sections
 
         public void Match(string line)
         {
-            var splitted = line.Split(new[] { KeyValueFlag }, StringSplitOptions.None);
-            if (splitted.Length < 2)
+            var split = line.Split(new[] { KeyValueFlag }, StringSplitOptions.None);
+            if (split.Length < 2)
                 throw new Exception("Unknown Key-Value: " + line);
-            var key = splitted[0];
-            var value = string.Join(KeyValueFlag, splitted.Skip(1)).Trim();
+            var key = split[0];
+            var value = string.Join(KeyValueFlag, split.Skip(1)).Trim();
 
             var prop = GetType().GetProperty(key, BindingFlags.Public | BindingFlags.Instance);
 

@@ -1,4 +1,4 @@
-﻿namespace OSharp.Beatmap.Sections
+﻿namespace OSharp.Beatmap.Configurable
 {
     public interface ISection
     {

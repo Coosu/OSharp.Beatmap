@@ -2,6 +2,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using OSharp.Beatmap.Configurable;
 using OSharp.Common.Mathematics;
 
 namespace OSharp.Beatmap.Sections

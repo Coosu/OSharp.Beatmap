@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
 using System.Text;
+using OSharp.Beatmap.Configurable;
 using OSharp.Common.Mathematics;
 
 namespace OSharp.Beatmap.Sections
