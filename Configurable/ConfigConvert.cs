@@ -24,7 +24,7 @@ namespace OSharp.Beatmap.Configurable
             var type = typeof(T);
             var instance = (T)Activator.CreateInstance(type, true);
             var line = reader.ReadLine();
-            ISection currentSection = null;
+            Section currentSection = null;
             while (line != null)
             {
                 if (string.IsNullOrWhiteSpace(line))
@@ -40,9 +40,9 @@ namespace OSharp.Beatmap.Configurable
                     {
                         var constructors = matched.Type.GetConstructor(new[] { type });
                         if (constructors != null)
-                            currentSection = Activator.CreateInstance(matched.Type, instance) as ISection;
+                            currentSection = Activator.CreateInstance(matched.Type, instance) as Section;
                         else
-                            currentSection = Activator.CreateInstance(matched.Type) as ISection;
+                            currentSection = Activator.CreateInstance(matched.Type) as Section;
                         matched.PropertyInfo.SetValue(instance, currentSection);
                     }
                     else
@@ -121,7 +121,7 @@ namespace OSharp.Beatmap.Configurable
             }
 
             var propType = info.PropertyType;
-            if (propType?.GetInterfaces().Contains(typeof(ISection)) != true)
+            if (propType?.IsSubclassOf(typeof(Section)) != true)
             {
                 return;
             }

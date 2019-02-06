@@ -10,14 +10,14 @@ namespace OSharp.Beatmap
     public class OsuFile : Config
     {
         public int Version { get; set; }
-        public General General { get; set; }
-        public Editor Editor { get; set; }
-        public Metadata Metadata { get; set; }
-        public Difficulty Difficulty { get; set; }
-        public Events Events { get; set; }
-        public TimingPoints TimingPoints { get; set; }
-        public Colours Colours { get; set; }
-        public HitObjects HitObjects { get; set; }
+        public GeneralSection General { get; set; }
+        public EditorSection Editor { get; set; }
+        public MetadataSection Metadata { get; set; }
+        public DifficultySection Difficulty { get; set; }
+        public EventSection Events { get; set; }
+        public TimingSection TimingPoints { get; set; }
+        public ColorSection Colours { get; set; }
+        public HitObjectSection HitObjects { get; set; }
 
         public static OsuFile ReadFromFile(string path)
         {

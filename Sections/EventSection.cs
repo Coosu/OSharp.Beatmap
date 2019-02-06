@@ -1,20 +1,22 @@
-﻿using OSharp.Beatmap.Sections.Event;
+﻿using OSharp.Beatmap.Configurable;
+using OSharp.Beatmap.Sections.Event;
+using OSharp.Common.Mathematics;
 using OSharp.Storyboard.Management;
 using System.Collections.Generic;
 using System.Globalization;
+using System.IO;
 using System.Linq;
 using System.Text;
-using OSharp.Beatmap.Configurable;
-using OSharp.Common.Mathematics;
 
 namespace OSharp.Beatmap.Sections
 {
-    public class Events : ISection
+    [SectionProperty("Events")]
+    public class EventSection : Section
     {
         public BackgroundData BackgroundInfo { get; set; }
         public VideoData VideoInfo { get; set; }
         public List<StoryboardSampleData> SampleInfo { get; set; } = new List<StoryboardSampleData>();
-        public List<RangeValue<double>> Breaks { get; set; } = new List<RangeValue<double>>();
+        public List<RangeValue<int>> Breaks { get; set; } = new List<RangeValue<int>>();
         public ElementGroup ElementGroup { get; set; }
 
         private readonly StringBuilder _sbInfo = new StringBuilder();
@@ -26,7 +28,7 @@ namespace OSharp.Beatmap.Sections
         private const string SectionStoryboard = "//Storyboard";
         private const string SectionSbSamples = "//Storyboard Sound Samples";
 
-        public void Match(string line)
+        public override void Match(string line)
         {
             if (line.StartsWith("//"))
             {
@@ -90,7 +92,7 @@ namespace OSharp.Beatmap.Sections
                     case SectionBreak:
                         {
                             var infos = line.Split(',');
-                            Breaks.Add(new RangeValue<double>(double.Parse(infos[1]), double.Parse(infos[2])));
+                            Breaks.Add(new RangeValue<int>(int.Parse(infos[1]), int.Parse(infos[2])));
                         }
                         break;
                     case SectionSbSamples:
@@ -116,22 +118,30 @@ namespace OSharp.Beatmap.Sections
             }
         }
 
-        public string ToSerializedString()
+        public override void AppendSerializedString(TextWriter textWriter)
         {
-            return string.Join("\r\n",
-                       "[Events]",
-                       SectionBgVideo,
-                       VideoInfo,
-                       BackgroundInfo,
-                       SectionBreak,
-                       string.Join("\r\n", Breaks.Select(q => string.Join(",", "2",
-                           q.StartTime.ToString(CultureInfo.InvariantCulture),
-                           q.EndTime.ToString(CultureInfo.InvariantCulture)))),
-                       _sbInfo.ToString().TrimEnd('\r', '\n'),
-                       SectionSbSamples,
-                       string.Join("\r\n", SampleInfo),
-                       string.Join("\r\n", _unknownSection.Select(k => $"{k.Key}\r\n{k.Value.ToString().TrimEnd('\r', '\n')}"))
-                   ) + "\r\n";
+            textWriter.WriteLine($"[{SectionName}]");
+            textWriter.WriteLine(SectionBgVideo);
+            textWriter.WriteLine(VideoInfo); //optimize
+            textWriter.WriteLine(BackgroundInfo); //optimize
+            textWriter.WriteLine(SectionBreak);
+            foreach (var range in Breaks)
+            {
+                textWriter.WriteLine($"2,{range.StartTime},{range.EndTime}");
+            }
+
+            textWriter.WriteLine(_sbInfo.ToString().TrimEnd('\r', '\n'));
+            textWriter.WriteLine(SectionSbSamples);
+            foreach (var sampleData in SampleInfo)
+            {
+                textWriter.WriteLine(sampleData); //optimize
+            }
+
+            foreach (var pair in _unknownSection)
+            {
+                textWriter.WriteLine($"{pair.Key}\r\n" +
+                                     $"{pair.Value.ToString().TrimEnd('\r', '\n')}");
+            }
         }
     }
 }

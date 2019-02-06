@@ -1,14 +1,22 @@
-﻿using System.Globalization;
+﻿using OSharp.Beatmap.Configurable;
+using OSharp.Beatmap.Internal;
+using System.Globalization;
+using System.IO;
 
 namespace OSharp.Beatmap.Sections.Event
 {
-    public class VideoData
+    public class VideoData : SerializeWritableObject
     {
         public double Offset { get; set; }
         public string Filename { get; set; }
-        public override string ToString()
+
+        public override string ToString() => $"Video,{Offset.ToInvariantString()},\"{Filename}\"";
+
+        public override void AppendSerializedString(TextWriter textWriter)
         {
-            return $"Video,{Offset.ToString(CultureInfo.InvariantCulture)},\"{Filename}\"";
+            textWriter.Write($"Video,");
+            textWriter.Write($"{Offset.ToInvariantString()},");
+            textWriter.Write($"\"{Filename}\"");
         }
     }
 }

@@ -7,7 +7,7 @@ namespace OSharp.Beatmap.Configurable
     public abstract class ValueConverter
     {
         public abstract object ReadSection(string value, Type targetType);
-        public abstract string WriteSection(object value, Type targetType);
+        public abstract string WriteSection(object value);
     }
 
     public abstract class ValueConverter<T> : ValueConverter
@@ -21,7 +21,7 @@ namespace OSharp.Beatmap.Configurable
             return ReadSection(value);
         }
 
-        public sealed override string WriteSection(object value, Type targetType)
+        public sealed override string WriteSection(object value)
         {
             return WriteSection((T)value);
         }

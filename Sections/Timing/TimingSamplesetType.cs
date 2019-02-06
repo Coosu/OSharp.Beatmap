@@ -1,6 +1,6 @@
 ﻿namespace OSharp.Beatmap.Sections.Timing
 {
-    public enum TimingSampleset
+    public enum TimingSamplesetType
     {
         Normal,
         Soft,

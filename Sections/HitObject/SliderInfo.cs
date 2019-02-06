@@ -14,8 +14,8 @@ namespace OSharp.Beatmap.Sections.HitObject
         public int Repeat { get; set; }
         public decimal PixelLength { get; set; }
         public HitsoundType[] EdgeHitsounds { get; set; }
-        public ObjectSampleset[] EdgeSamples { get; set; }
-        public ObjectSampleset[] EdgeAdditions { get; set; }
+        public ObjectSamplesetType[] EdgeSamples { get; set; }
+        public ObjectSamplesetType[] EdgeAdditions { get; set; }
 
         //extension
         public Point StartPoint => CurvePoints.First();
@@ -42,8 +42,8 @@ namespace OSharp.Beatmap.Sections.HitObject
                         Offset = (double)(_offset + time * i),
                         Point = i % 2 == 0 ? StartPoint : EndPoint,
                         EdgeHitsound = EdgeHitsounds?[i] ?? HitsoundType.Normal,
-                        EdgeSample = EdgeSamples?[i] ?? ObjectSampleset.Auto,
-                        EdgeAddition = EdgeAdditions?[i] ?? ObjectSampleset.Auto
+                        EdgeSample = EdgeSamples?[i] ?? ObjectSamplesetType.Auto,
+                        EdgeAddition = EdgeAdditions?[i] ?? ObjectSamplesetType.Auto
                     };
                 }
 
@@ -57,7 +57,7 @@ namespace OSharp.Beatmap.Sections.HitObject
         public double Offset { get; set; }
         public Point Point { get; set; }
         public HitsoundType EdgeHitsound { get; set; }
-        public ObjectSampleset EdgeSample { get; set; }
-        public ObjectSampleset EdgeAddition { get; set; }
+        public ObjectSamplesetType EdgeSample { get; set; }
+        public ObjectSamplesetType EdgeAddition { get; set; }
     }
 }

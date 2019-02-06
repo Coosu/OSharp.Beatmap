@@ -3,10 +3,10 @@
 namespace OSharp.Beatmap.Sections
 {
     [SectionProperty("Difficulty")]
-    public class Difficulty : KeyValueSection
+    public class DifficultySection : KeyValueSection
     {
         [SectionProperty("HPDrainRate")]
-        public double HPDrainRate { get; set; } = 5;
+        public double HpDrainRate { get; set; } = 5;
         [SectionProperty("CircleSize")]
         public double CircleSize { get; set; } = 5;
         [SectionProperty("OverallDifficulty")]

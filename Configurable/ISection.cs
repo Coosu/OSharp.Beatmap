@@ -1,8 +1,10 @@
-﻿namespace OSharp.Beatmap.Configurable
+﻿using System.IO;
+
+namespace OSharp.Beatmap.Configurable
 {
-    public interface ISection
+    public interface ISection : ISerializeWritable
     {
         void Match(string line);
-        string ToSerializedString();
+
     }
 }

@@ -4,7 +4,6 @@
     {
         Circle,
         Slider,
-        NewCombo,
         Spinner,
         Hold
     }

@@ -1,10 +1,12 @@
-﻿using OSharp.Beatmap.Sections.GamePlay;
+﻿using OSharp.Beatmap.Configurable;
+using OSharp.Beatmap.Sections.GamePlay;
 using System;
 using System.Globalization;
+using System.IO;
 
 namespace OSharp.Beatmap.Sections.Timing
 {
-    public class TimingPoint
+    public class TimingPoint : SerializeWritableObject
     {
         public bool Positive { get; set; }
         public double Offset { get; set; }
@@ -39,7 +41,7 @@ namespace OSharp.Beatmap.Sections.Timing
                 _rhythm = value;
             }
         } // 1/4, 2/4, 3/4, 4/4, etc ..
-        public TimingSampleset SamplesetEnum { get; set; }
+        public TimingSamplesetType TimingSampleset { get; set; }
         public int Track { get; set; }
         public int Volume { get; set; }
         public bool Inherit { get; set; }
@@ -47,8 +49,27 @@ namespace OSharp.Beatmap.Sections.Timing
 
         private int _rhythm;
 
-        public override string ToString() => string.Format("{0},{1},{2},{3},{4},{5},{6},{7}", Offset,
-            Factor.ToString(CultureInfo.InvariantCulture), Rhythm,
-            (int)SamplesetEnum + 1, Track, Volume, Convert.ToInt32(!Inherit), Convert.ToInt32(Kiai));
+        public override string ToString() =>
+            string.Format("{0},{1},{2},{3},{4},{5},{6},{7}",
+                Offset,
+                Factor.ToString(CultureInfo.InvariantCulture),
+                Rhythm,
+                (int) TimingSampleset + 1,
+                Track,
+                Volume,
+                Convert.ToInt32(!Inherit),
+                Convert.ToInt32(Kiai));
+
+        public override void AppendSerializedString(TextWriter textWriter)
+        {
+            textWriter.Write($"{Offset},");
+            textWriter.Write($"{Factor.ToString(CultureInfo.InvariantCulture)},");
+            textWriter.Write($"{Rhythm},");
+            textWriter.Write($"{(int)TimingSampleset + 1},");
+            textWriter.Write($"{Track},");
+            textWriter.Write($"{Volume},");
+            textWriter.Write($"{Convert.ToInt32(!Inherit)},");
+            textWriter.WriteLine(Convert.ToInt32(Kiai));
+        }
     }
 }

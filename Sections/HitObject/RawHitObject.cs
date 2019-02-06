@@ -1,8 +1,12 @@
-﻿using OSharp.Beatmap.Internal;
+﻿using OSharp.Beatmap.Configurable;
+using OSharp.Beatmap.Internal;
+using System;
+using System.IO;
+using System.Runtime.Serialization;
 
 namespace OSharp.Beatmap.Sections.HitObject
 {
-    public class RawHitObject
+    public class RawHitObject : SerializeWritableObject
     {
         public int X { get; set; }
         public int Y { get; set; }
@@ -40,8 +44,8 @@ namespace OSharp.Beatmap.Sections.HitObject
         public string Extras { get; set; }
 
         // extended
-        public ObjectSampleset SampleSet => Extras?.Split(':')[0].ParseToEnum<ObjectSampleset>() ?? default;
-        public ObjectSampleset AdditionSet => Extras?.Split(':')[1].ParseToEnum<ObjectSampleset>() ?? default;
+        public ObjectSamplesetType SampleSet => Extras?.Split(':')[0].ParseToEnum<ObjectSamplesetType>() ?? default;
+        public ObjectSamplesetType AdditionSet => Extras?.Split(':')[1].ParseToEnum<ObjectSamplesetType>() ?? default;
         public int CustomIndex => Extras == null ? 0 : int.Parse(Extras.Split(':')[2]);
         public int SampleVolume => Extras == null
             ? 0
@@ -56,5 +60,10 @@ namespace OSharp.Beatmap.Sections.HitObject
         public string NotImplementedInfo { get; set; }
 
         public override string ToString() => $"{X},{Y},{Offset},{NotImplementedInfo}";
+
+        public override void AppendSerializedString(TextWriter textWriter)
+        {
+            textWriter.WriteLine($"{X},{Y},{Offset},{NotImplementedInfo}");
+        }
     }
 }

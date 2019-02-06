@@ -1,32 +1,34 @@
-﻿using OSharp.Beatmap.Internal;
+﻿using OSharp.Beatmap.Configurable;
+using OSharp.Beatmap.Internal;
 using OSharp.Beatmap.Sections.HitObject;
 using OSharp.Beatmap.Sections.Timing;
 using System;
 using System.Collections.Generic;
 using System.Drawing;
+using System.IO;
 using System.Linq;
-using OSharp.Beatmap.Configurable;
 
 namespace OSharp.Beatmap.Sections
 {
-    public class HitObjects : ICustomSection
+    [SectionProperty("HitObjects")]
+    public class HitObjectSection : Section
     {
-        private readonly TimingPoints _timingPoints;
-        private readonly Difficulty _difficulty;
-        private readonly General _general;
+        private readonly TimingSection _timingPoints;
+        private readonly DifficultySection _difficulty;
+        private readonly GeneralSection _general;
         public List<RawHitObject> HitObjectList { get; set; }
 
         public double MinTime => HitObjectList.Count == 0 ? 0 : HitObjectList.Min(t => t.Offset);
         public double MaxTime => HitObjectList.Count == 0 ? 0 : HitObjectList.Max(t => t.Offset);
 
-        public HitObjects(OsuFile osuFile)
+        public HitObjectSection(OsuFile osuFile)
         {
             _timingPoints = osuFile.TimingPoints;
             _difficulty = osuFile.Difficulty;
             _general = osuFile.General;
         }
 
-        public void Match(string line)
+        public override void Match(string line)
         {
             if (HitObjectList == null)
                 HitObjectList = new List<RawHitObject>();
@@ -49,19 +51,19 @@ namespace OSharp.Beatmap.Sections
                 Hitsound = hitsound
             };
 
-            if ((type & RawObjectType.Circle) == RawObjectType.Circle)
+            if (type.HasFlag(RawObjectType.Circle))
             {
                 ConvertToCircle(hitObject, notImplementedInfo);
             }
-            else if ((type & RawObjectType.Slider) == RawObjectType.Slider)
+            else if (type.HasFlag(RawObjectType.Slider))
             {
                 ConvertToSlider(hitObject, notImplementedInfo);
             }
-            else if ((type & RawObjectType.Spinner) == RawObjectType.Spinner)
+            else if (type.HasFlag(RawObjectType.Spinner))
             {
                 ConvertToSpinner(hitObject, notImplementedInfo);
             }
-            else if ((type & RawObjectType.Hold) == RawObjectType.Hold)
+            else if (type.HasFlag(RawObjectType.Hold))
             {
                 ConvertToHold(hitObject, notImplementedInfo);
             }
@@ -95,8 +97,8 @@ namespace OSharp.Beatmap.Sections
             decimal pixelLength = decimal.Parse(infos[2]);
 
             HitsoundType[] edgeHitsounds;
-            ObjectSampleset[] edgeSamples;
-            ObjectSampleset[] edgeAdditions;
+            ObjectSamplesetType[] edgeSamples;
+            ObjectSamplesetType[] edgeAdditions;
             if (infos.Length == 3)
             {
                 edgeHitsounds = null;
@@ -113,13 +115,13 @@ namespace OSharp.Beatmap.Sections
             {
                 edgeHitsounds = infos[3].Split('|').Select(t => t.ParseToEnum<HitsoundType>()).ToArray();
                 string[] edgeAdditionsStr = infos[4].Split('|');
-                edgeSamples = new ObjectSampleset[repeat + 1];
-                edgeAdditions = new ObjectSampleset[repeat + 1];
+                edgeSamples = new ObjectSamplesetType[repeat + 1];
+                edgeAdditions = new ObjectSamplesetType[repeat + 1];
                 for (int i = 0; i < edgeAdditionsStr.Length; i++)
                 {
                     var sampAdd = edgeAdditionsStr[i].Split(':');
-                    edgeSamples[i] = sampAdd[0].ParseToEnum<ObjectSampleset>();
-                    edgeAdditions[i] = sampAdd[1].ParseToEnum<ObjectSampleset>();
+                    edgeSamples[i] = sampAdd[0].ParseToEnum<ObjectSamplesetType>();
+                    edgeAdditions[i] = sampAdd[1].ParseToEnum<ObjectSamplesetType>();
                 }
             }
 
@@ -190,7 +192,13 @@ namespace OSharp.Beatmap.Sections
             //throw new NotImplementedException();
         }
 
-
-        public string ToSerializedString() => "[HitObjects]\r\n" + string.Join("\r\n", HitObjectList) + "\r\n";
+        public override void AppendSerializedString(TextWriter textWriter)
+        {
+            textWriter.WriteLine($"[{SectionName}]");
+            foreach (var hitObject in HitObjectList)
+            {
+                hitObject.AppendSerializedString(textWriter);
+            }
+        }
     }
 }

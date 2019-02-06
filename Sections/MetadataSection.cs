@@ -5,7 +5,7 @@ using System.Linq;
 namespace OSharp.Beatmap.Sections
 {
     [SectionProperty("Metadata")]
-    public class Metadata : KeyValueSection
+    public class MetadataSection : KeyValueSection
     {
         [SectionProperty("Title")]         public string Title { get; set; }
         [SectionProperty("TitleUnicode")]  public string TitleUnicode { get; set; }
@@ -16,14 +16,13 @@ namespace OSharp.Beatmap.Sections
         [SectionProperty("Source")]        public string Source { get; set; }
 
         [SectionProperty("Tags")]
-        public string Tags
-        {
-            get => TagList == null ? "" : string.Join(" ", TagList);
-            set => TagList = value.Split(' ').ToList();
-        }
+        [SectionConverter(typeof(SplitConverter), " ")]
+        public List<string> TagList { get;  set; }
 
-        [SectionIgnore]                    public List<string> TagList { get; private set; }
-        [SectionProperty("BeatmapID")]     public int BeatmapID { get; set; }
-        [SectionProperty("BeatmapSetID")]  public int BeatmapSetID { get; set; }
+        [SectionProperty("BeatmapID")]     public int BeatmapId { get; set; }
+        [SectionProperty("BeatmapSetID")]  public int BeatmapSetId { get; set; }
+
+        public MetaString TitleMeta => new MetaString(Title, TitleUnicode);
+        public MetaString ArtistMeta => new MetaString(Artist, ArtistUnicode);
     }
 }

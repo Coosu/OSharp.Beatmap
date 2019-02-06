@@ -5,7 +5,7 @@ using OSharp.Beatmap.Sections.Timing;
 namespace OSharp.Beatmap.Sections
 {
     [SectionProperty("General")]
-    public class General : KeyValueSection
+    public class GeneralSection : KeyValueSection
     {
         [SectionProperty("AudioFilename")]
         public string AudioFilename { get; set; } = "audio.mp3";
@@ -21,7 +21,7 @@ namespace OSharp.Beatmap.Sections
         public bool Countdown { get; set; } = true;
 
         [SectionProperty("SampleSet")]
-        public TimingSampleset SampleSet { get; set; } = 0;
+        public TimingSamplesetType SampleSet { get; set; } = 0;
 
         [SectionProperty("StackLeniency")]
         public double StackLeniency { get; set; } = 0.7;
@@ -41,5 +41,7 @@ namespace OSharp.Beatmap.Sections
         [SectionProperty("EpilepsyWarning")]
         [SectionBool(BoolParseOption.ZeroOne)]
         public bool EpilepsyWarning { get; set; } = false;
+
+        protected override string KeyValueFlag => ": ";
     }
 }

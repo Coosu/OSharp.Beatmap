@@ -17,7 +17,7 @@ namespace OSharp.Beatmap
 
         public override string WriteSection(Color value)
         {
-            throw new NotImplementedException();
+            return $"{value.R},{value.G},{value.B}";
         }
     }
 }

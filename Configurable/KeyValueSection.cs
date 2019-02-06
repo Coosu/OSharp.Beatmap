@@ -1,48 +1,57 @@
 ﻿using OSharp.Beatmap.Internal;
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Reflection;
 using System.Text;
 
 namespace OSharp.Beatmap.Configurable
 {
-    public abstract class KeyValueSection : ISection
+    public abstract class KeyValueSection : Section
     {
         [SectionIgnore]
-        public Dictionary<string, string> UndefinedPairs { get; set; }
-
-        [SectionIgnore]
-        public List<(PropertyInfo propInfo, string name)> PropertyInfos { get; set; }
+        public Dictionary<string, string> UndefinedPairs { get; private set; }
 
         public KeyValueSection()
         {
             var type = GetType();
-            PropertyInfos = type.GetProperties(BindingFlags.Public | BindingFlags.Instance)
-                .Where(k => k.GetCustomAttribute<SectionIgnoreAttribute>() == null)
-                .Select(k =>
-                {
-                    var attr = k.GetCustomAttribute<SectionPropertyAttribute>();
-                    return (k, attr == null ? k.Name : attr.Name);
-                })
-                .ToList();
-            PropertyInfos.AddRange(type.GetProperties(BindingFlags.NonPublic | BindingFlags.Instance)
-                .Where(k => k.GetCustomAttribute<SectionPropertyAttribute>() != null)
-                .Select(k =>
-                {
-                    var attr = k.GetCustomAttribute<SectionPropertyAttribute>();
-                    return (k, attr.Name);
-                })
-            );
+            var publicProps = type.GetProperties(BindingFlags.Public | BindingFlags.Instance);
+            if (publicProps.Length != 0)
+            {
+                _propertyInfos = publicProps
+                    .Where(k => k.GetCustomAttribute<SectionIgnoreAttribute>() == null)
+                    .Select(k =>
+                    {
+                        var attr = k.GetCustomAttribute<SectionPropertyAttribute>();
+                        return (k, attr == null ? k.Name : attr.Name);
+                    })
+                    .ToList();
+            }
+            else
+                _propertyInfos = new List<(PropertyInfo propInfo, string name)>();
+
+            var privateProps = type.GetProperties(BindingFlags.NonPublic | BindingFlags.Instance);
+            if (privateProps.Length != 0)
+            {
+                _propertyInfos.AddRange(privateProps
+                    .Where(k => k.GetCustomAttribute<SectionIgnoreAttribute>() == null &&
+                                k.GetCustomAttribute<SectionPropertyAttribute>() != null)
+                    .Select(k =>
+                    {
+                        var attr = k.GetCustomAttribute<SectionPropertyAttribute>();
+                        return (k, attr.Name);
+                    })
+                );
+            }
         }
 
-        public virtual void Match(string line)
+        public override void Match(string line)
         {
             if (!MatchKeyValue(line, out var key, out var value))
                 throw new Exception("Unknown Key-Value: " + line);
 
-            //var prop = GetType().GetProperty(key, BindingFlags.Public | BindingFlags.Instance);
-            var prop = PropertyInfos.FirstOrDefault(k => k.name == key).propInfo;
+            var prop = _propertyInfos.FirstOrDefault(k => k.name == key).propInfo;
             if (prop == null)
             {
                 if (UndefinedPairs == null) UndefinedPairs = new Dictionary<string, string>();
@@ -51,20 +60,20 @@ namespace OSharp.Beatmap.Configurable
             else
             {
                 var propType = prop.GetMethod.ReturnType;
+                var attr = prop.GetCustomAttribute<SectionConverterAttribute>();
 
-                if (propType.BaseType == typeof(Enum))
+                if (attr != null)
+                {
+                    var converter = attr.GetConverter();
+                    prop.SetValue(this, converter.ReadSection(value, propType));
+                }
+                else if (propType.BaseType == typeof(Enum))
                 {
                     prop.SetValue(this, Enum.Parse(propType, value));
                 }
                 else
                 {
-                    var attr = prop.GetCustomAttribute<SectionConverterAttribute>();
-                    if (attr != null)
-                    {
-                        var converter = (ValueConverter)Activator.CreateInstance(attr.ConverterType, true);
-                        prop.SetValue(this, converter.ReadSection(value, propType));
-                    }
-                    else if (ValueConvert.ConvertValue(value, propType, out var converted))
+                    if (ValueConvert.ConvertValue(value, propType, out var converted))
                     {
                         prop.SetValue(this, converted);
                     }
@@ -86,64 +95,76 @@ namespace OSharp.Beatmap.Configurable
                 return false;
             }
 
-            key = line.Substring(0, index).Trim();
-            value = line.Substring(index + 1).Trim();
+            key = line.Substring(0, index);
+            value = line.Substring(index + KeyValueFlag.Length);
             return true;
         }
 
         protected int MatchFlag(string line)
         {
             var index = line.IndexOf(KeyValueFlag, StringComparison.InvariantCulture);
-
             return index;
         }
 
-        public virtual string ToSerializedString()
+        public override void AppendSerializedString(TextWriter textWriter)
         {
-            var props = GetType().GetProperties().Where(p => p.GetCustomAttribute(typeof(SectionIgnoreAttribute)) == null);
-            StringBuilder sb = new StringBuilder($"[{GetType().Name}]\r\n");
+            textWriter.WriteLine($"[{SectionName}]");
 
-            foreach (var prop in props)
+            foreach (var (prop, name) in _propertyInfos)
             {
-                object key = prop.Name, value = prop.GetValue(this);
+                string key = name;
+                string value = null;
+                var rawObj = prop.GetValue(this);
 
-                if (prop.GetMethod.ReturnType.BaseType == typeof(Enum))
+                var attr = prop.GetCustomAttribute<SectionConverterAttribute>(false);
+                if (attr != null)
                 {
-                    var attrs = prop.GetCustomAttributes(false);
-
-                    foreach (var info in attrs)
+                    var converter = attr.GetConverter();
+                    value = converter.WriteSection(rawObj);
+                }
+                else if (prop.GetMethod.ReturnType.BaseType == typeof(Enum))
+                {
+                    var enumAttr = prop.GetCustomAttribute<SectionEnumAttribute>(false);
+                    if (enumAttr != null)
                     {
-                        switch (info)
+                        switch (enumAttr.Option)
                         {
-                            case SectionEnumAttribute configEnum:
-                                if (configEnum.Option == EnumParseOption.Index)
-                                    value = (int)value;
+                            case EnumParseOption.Index:
+                                value = ((int)rawObj).ToString();
                                 break;
+                            case EnumParseOption.String:
+                                value = rawObj.ToString();
+                                break;
+                            default:
+                                throw new ArgumentOutOfRangeException();
                         }
                     }
                 }
                 else if (prop.GetMethod.ReturnType == typeof(bool))
                 {
-                    var attrs = prop.GetCustomAttributes(false);
-
-                    foreach (var info in attrs)
+                    var boolAttr = prop.GetCustomAttribute<SectionBoolAttribute>(false);
+                    if (boolAttr != null)
                     {
-                        switch (info)
+                        switch (boolAttr.Option)
                         {
-                            case SectionBoolAttribute configBool:
-                                if (configBool.Option == BoolParseOption.ZeroOne)
-                                    value = Convert.ToInt32(value);
+                            case BoolParseOption.ZeroOne:
+                                value = Convert.ToInt32(rawObj).ToString();
                                 break;
+                            case BoolParseOption.String:
+                                value = rawObj.ToString();
+                                break;
+                            default:
+                                throw new ArgumentOutOfRangeException();
                         }
                     }
                 }
 
-                sb.AppendLine($"{key}: {value}");
+                if (value == null) value = rawObj.ToString();
+                textWriter.WriteLine($"{key}: {value}");
             }
-
-            return sb + "\r\n";
         }
 
         protected virtual string KeyValueFlag { get; } = ":";
+        private readonly List<(PropertyInfo propInfo, string name)> _propertyInfos;
     }
 }

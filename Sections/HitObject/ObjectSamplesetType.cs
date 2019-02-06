@@ -1,6 +1,6 @@
 ﻿namespace OSharp.Beatmap.Sections.HitObject
 {
-    public enum ObjectSampleset
+    public enum ObjectSamplesetType
     {
         Auto,
         Normal,

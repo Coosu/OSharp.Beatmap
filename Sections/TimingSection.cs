@@ -1,19 +1,21 @@
-﻿using OSharp.Beatmap.Sections.Timing;
+﻿using OSharp.Beatmap.Configurable;
+using OSharp.Beatmap.Sections.Timing;
+using OSharp.Common.Mathematics;
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
-using OSharp.Beatmap.Configurable;
-using OSharp.Common.Mathematics;
 
 namespace OSharp.Beatmap.Sections
 {
-    public class TimingPoints : ISection
+    [SectionProperty("TimingPoints")]
+    public class TimingSection : Section
     {
         public List<TimingPoint> TimingList { get; set; }
         public double MinTime => TimingList.Count == 0 ? 0 : TimingList.Min(t => t.Offset);
         public double MaxTime => TimingList.Count == 0 ? 0 : TimingList.Max(t => t.Offset);
 
-        public void Match(string line)
+        public override void Match(string line)
         {
             if (TimingList == null)
                 TimingList = new List<TimingPoint>();
@@ -24,7 +26,7 @@ namespace OSharp.Beatmap.Sections
                 Offset = double.Parse(param[0]),
                 Factor = double.Parse(param[1]),
                 Rhythm = int.Parse(param[2]),
-                SamplesetEnum = (TimingSampleset)(int.Parse(param[3]) - 1),
+                TimingSampleset = (TimingSamplesetType)(int.Parse(param[3]) - 1),
                 Track = int.Parse(param[4]),
                 Volume = int.Parse(param[5]),
                 Inherit = !Convert.ToBoolean(int.Parse(param[6])),
@@ -143,6 +145,13 @@ namespace OSharp.Beatmap.Sections
             return list.ToArray();
         }
 
-        public string ToSerializedString() => "[TimingPoints]\r\n" + string.Join("\r\n", TimingList) + "\r\n\r\n";
+        public override void AppendSerializedString(TextWriter textWriter)
+        {
+            textWriter.WriteLine($"[{SectionName}]");
+            foreach (var timingPoint in TimingList)
+            {
+                timingPoint.AppendSerializedString(textWriter);
+            }
+        }
     }
 }

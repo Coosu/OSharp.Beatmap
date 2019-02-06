@@ -5,7 +5,7 @@ using System.Text;
 
 namespace OSharp.Beatmap
 {
-    public class MetaString
+    public struct MetaString
     {
         public string Origin { get; }
         public string Unicode { get; }
