@@ -1,4 +1,5 @@
-﻿using System;
+﻿using OSharp.Beatmap.Internal;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
@@ -37,12 +38,8 @@ namespace OSharp.Beatmap.Configurable
 
         public virtual void Match(string line)
         {
-            var index = line.IndexOf(KeyValueFlag, StringComparison.InvariantCulture);
-            if (index == -1)
+            if (!MatchKeyValue(line, out var key, out var value))
                 throw new Exception("Unknown Key-Value: " + line);
-
-            var key = line.Substring(0, index).Trim();
-            var value = line.Substring(index + 1).Trim();
 
             //var prop = GetType().GetProperty(key, BindingFlags.Public | BindingFlags.Instance);
             var prop = PropertyInfos.FirstOrDefault(k => k.name == key).propInfo;
@@ -56,13 +53,49 @@ namespace OSharp.Beatmap.Configurable
                 var propType = prop.GetMethod.ReturnType;
 
                 if (propType.BaseType == typeof(Enum))
+                {
                     prop.SetValue(this, Enum.Parse(propType, value));
+                }
                 else
                 {
-                    object sb = ConvertValue(value, propType);
-                    prop.SetValue(this, sb);
+                    var attr = prop.GetCustomAttribute<SectionConverterAttribute>();
+                    if (attr != null)
+                    {
+                        var converter = (ValueConverter)Activator.CreateInstance(attr.ConverterType, true);
+                        prop.SetValue(this, converter.ReadSection(value, propType));
+                    }
+                    else if (ValueConvert.ConvertValue(value, propType, out var converted))
+                    {
+                        prop.SetValue(this, converted);
+                    }
+                    else
+                    {
+                        throw new MissingMethodException($"Can not convert {{{value}}} to type {propType}.");
+                    }
                 }
             }
+        }
+
+        protected bool MatchKeyValue(string line, out string key, out string value)
+        {
+            int index = MatchFlag(line);
+            if (index == -1)
+            {
+                key = null;
+                value = null;
+                return false;
+            }
+
+            key = line.Substring(0, index).Trim();
+            value = line.Substring(index + 1).Trim();
+            return true;
+        }
+
+        protected int MatchFlag(string line)
+        {
+            var index = line.IndexOf(KeyValueFlag, StringComparison.InvariantCulture);
+
+            return index;
         }
 
         public virtual string ToSerializedString()
@@ -112,25 +145,5 @@ namespace OSharp.Beatmap.Configurable
         }
 
         protected virtual string KeyValueFlag { get; } = ":";
-
-        private static object ConvertValue(string value, Type propType)
-        {
-            object arg;
-            if (propType == typeof(bool) && int.TryParse(value, out var parsed))
-                arg = parsed;
-            else
-                arg = value;
-
-            var type = typeof(Convert);
-            var methodName = $"To{propType.Name}";
-            var method = type.GetMethods().Where(t => t.Name == methodName).Where(t => t.GetParameters().Length == 1)
-                .FirstOrDefault(t => t.GetParameters().First().ParameterType == typeof(object));
-
-            if (method == default)
-                throw new MissingMethodException($"Can not find method: \"Convert.{methodName}(Object obj)\"");
-
-            object[] p = { arg };
-            return method.Invoke(null, p);
-        }
     }
 }
