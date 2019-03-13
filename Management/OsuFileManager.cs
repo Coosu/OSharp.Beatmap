@@ -1,5 +1,6 @@
 ﻿using System.Collections.Generic;
 using System.IO;
+using System.Threading.Tasks;
 
 namespace OSharp.Beatmap.Management
 {
@@ -11,20 +12,17 @@ namespace OSharp.Beatmap.Management
         {
 
         }
-
-        public OsuFileManager(string directoryPath)
-        {
-            LoadFromDirectory(directoryPath);
-        }
-
-        public void LoadFromDirectory(string path)
+        public async Task LoadFromDirectoryAsync(string path)
         {
             DirectoryInfo di = new DirectoryInfo(path);
             FileInfo[] files = di.GetFiles("*.osu");
             foreach (var file in files)
-                FileList.Add(OsuFile.ReadFromFile(file.FullName));
+                FileList.Add(await OsuFile.ReadFromFileAsync(file.FullName));
         }
 
-        public void LoadFromFile(string path) => FileList.Add(OsuFile.ReadFromFile(path));
+        public async Task LoadFromFileAsync(string path)
+        {
+            FileList.Add(await OsuFile.ReadFromFileAsync(path));
+        }
     }
 }

@@ -27,20 +27,31 @@ namespace OSharp.Beatmap
 
         public string ToUnicodeString()
         {
-            return string.IsNullOrEmpty(Unicode)
-                ? (string.IsNullOrEmpty(Origin) ? default : Origin)
-                : Unicode;
+            return GetUnicode(Origin, Unicode);
         }
 
         public string ToOriginalString()
         {
-            return string.IsNullOrEmpty(Origin)
-                ? (string.IsNullOrEmpty(Unicode) ? "" : Unicode)
-                : Origin;
+            return GetOriginal(Origin, Unicode);
         }
 
         public string ToPreferredString() => _preferUnicode ? string.IsNullOrEmpty(Unicode) ? Origin : Unicode : Origin;
 
         public override string ToString() => string.IsNullOrEmpty(Unicode) ? Origin : Unicode;
+
+
+        public static string GetUnicode(string origin, string unicode)
+        {
+            return string.IsNullOrEmpty(unicode)
+                ? (string.IsNullOrEmpty(origin) ? default : origin)
+                : unicode;
+        }
+
+        public static string GetOriginal(string origin, string unicode)
+        {
+            return string.IsNullOrEmpty(origin)
+                ? (string.IsNullOrEmpty(unicode) ? default : unicode)
+                : origin;
+        }
     }
 }

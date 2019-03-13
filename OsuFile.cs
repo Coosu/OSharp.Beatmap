@@ -4,6 +4,7 @@ using System;
 using System.IO;
 using System.Linq;
 using System.Reflection;
+using System.Threading.Tasks;
 
 namespace OSharp.Beatmap
 {
@@ -19,12 +20,15 @@ namespace OSharp.Beatmap
         public ColorSection Colours { get; set; }
         public HitObjectSection HitObjects { get; set; }
 
-        public static OsuFile ReadFromFile(string path)
+        public static async Task<OsuFile> ReadFromFileAsync(string path)
         {
-            using (StreamReader sr = new StreamReader(path))
+            return await Task.Run(() =>
             {
-                return ConfigConvert.DeserializeObject<OsuFile>(sr);
-            }
+                using (StreamReader sr = new StreamReader(path))
+                {
+                    return ConfigConvert.DeserializeObject<OsuFile>(sr);
+                }
+            });
         }
 
         public override string ToString() => Path;

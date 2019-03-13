@@ -12,6 +12,7 @@ namespace OSharp.Beatmap.Sections
         {
             _splitter = splitter;
         }
+
         public override List<double> ReadSection(string value)
         {
             return value == null
