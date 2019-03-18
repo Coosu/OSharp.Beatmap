@@ -42,6 +42,10 @@ namespace OSharp.Beatmap.Sections
         [SectionBool(BoolParseOption.ZeroOne)]
         public bool EpilepsyWarning { get; set; } = false;
 
-        protected override string KeyValueFlag => ": ";
+        [SectionProperty("SkinPreference")]
+        public string SkinPreference { get; set; }
+
+        protected override string KeyValueFlag => ":";
+        protected override bool TrimPairs => true;
     }
 }

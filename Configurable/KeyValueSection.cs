@@ -54,7 +54,8 @@ namespace OSharp.Beatmap.Configurable
             var prop = _propertyInfos.FirstOrDefault(k => k.name == key).propInfo;
             if (prop == null)
             {
-                if (UndefinedPairs == null) UndefinedPairs = new Dictionary<string, string>();
+                if (UndefinedPairs == null)
+                    UndefinedPairs = new Dictionary<string, string>();
                 UndefinedPairs.Add(key, value);
             }
             else
@@ -96,7 +97,11 @@ namespace OSharp.Beatmap.Configurable
             }
 
             key = line.Substring(0, index);
+            if (TrimPairs)
+                key = key.Trim();
             value = line.Substring(index + KeyValueFlag.Length);
+            if (TrimPairs)
+                value = value.Trim();
             return true;
         }
 
@@ -159,12 +164,14 @@ namespace OSharp.Beatmap.Configurable
                     }
                 }
 
-                if (value == null) value = rawObj.ToString();
+                if (value == null)
+                    value = rawObj.ToString();
                 textWriter.WriteLine($"{key}: {value}");
             }
         }
 
         protected virtual string KeyValueFlag { get; } = ":";
+        protected virtual bool TrimPairs { get; } = false;
         private readonly List<(PropertyInfo propInfo, string name)> _propertyInfos;
     }
 }
