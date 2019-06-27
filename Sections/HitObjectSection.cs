@@ -132,7 +132,9 @@ namespace OSharp.Beatmap.Sections
             else
             {
                 double lastRedLineOffset = lastRedLinesIfExsist.Max(t => t.Offset);
-                lastRedLine = _timingPoints.TimingList.First(t => t.Offset == lastRedLineOffset && !t.Inherit);
+
+                //duplicate red lines, select the last one
+                lastRedLine = _timingPoints.TimingList.Last(t => t.Offset == lastRedLineOffset && !t.Inherit);
             }
 
             TimingPoint[] lastLinesIfExist = _timingPoints.TimingList.Where(t => t.Offset <= hitObject.Offset).ToArray();
@@ -141,7 +143,7 @@ namespace OSharp.Beatmap.Sections
 
             // hitobjects before lines is allowed
             if (lastLinesIfExist.Length == 0)
-                lastLines = new[] { _timingPoints.TimingList.First(t => !t.Inherit) };
+                lastLines = new[] { _timingPoints.TimingList.First(t => !t.Inherit) }; //red line multiple default 1.0
             else
             {
                 double lastLineOffset = lastLinesIfExist.Max(t => t.Offset);
@@ -151,17 +153,19 @@ namespace OSharp.Beatmap.Sections
 
             if (lastLines.Length > 1)
             {
-                if (lastLines.Length == 2)
-                {
-                    if (lastLines[0].Inherit != lastLines[1].Inherit)
-                    {
-                        lastLine = lastLines.First(t => t.Inherit);
-                    }
-                    else
-                        throw new RepeatTimingSectionException("存在同一时刻两条相同类型的Timing Section。");
-                }
-                else
-                    throw new RepeatTimingSectionException("存在同一时刻多条Timing Section。");
+                lastLine = lastLines.LastOrDefault(k => k.Inherit) ?? lastLines.Last(k => !k.Inherit);
+
+                //if (lastLines.Length == 2)
+                //{
+                //    if (lastLines[0].Inherit != lastLines[1].Inherit)
+                //    {
+                //        lastLine = lastLines.First(t => t.Inherit);
+                //    }
+                //    else
+                //        throw new RepeatTimingSectionException("存在同一时刻两条相同类型的Timing Section。");
+                //}
+                //else
+                //    throw new RepeatTimingSectionException("存在同一时刻多条Timing Section。");
             }
             else
                 lastLine = lastLines[0];

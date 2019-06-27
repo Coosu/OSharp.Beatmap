@@ -1,4 +1,4 @@
-﻿namespace Milky.OsuPlayer.Data
+﻿namespace OSharp.Beatmap.MetaData
 {
     public interface IMapIdentifiable
     {
