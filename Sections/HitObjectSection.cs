@@ -16,7 +16,7 @@ namespace OSharp.Beatmap.Sections
         private readonly TimingSection _timingPoints;
         private readonly DifficultySection _difficulty;
         private readonly GeneralSection _general;
-        public List<RawHitObject> HitObjectList { get; set; }
+        public List<RawHitObject> HitObjectList { get; set; } = new List<RawHitObject>();
 
         public double MinTime => HitObjectList.Count == 0 ? 0 : HitObjectList.Min(t => t.Offset);
         public double MaxTime => HitObjectList.Count == 0 ? 0 : HitObjectList.Max(t => t.Offset);
@@ -30,9 +30,6 @@ namespace OSharp.Beatmap.Sections
 
         public override void Match(string line)
         {
-            if (HitObjectList == null)
-                HitObjectList = new List<RawHitObject>();
-
             string[] param = line.Split(',');
 
             var x = int.Parse(param[0]);

@@ -22,7 +22,9 @@ namespace OSharp.Beatmap.Sections
         [SectionProperty("BeatmapID")]     public int BeatmapId { get; set; }
         [SectionProperty("BeatmapSetID")]  public int BeatmapSetId { get; set; }
 
+        [SectionIgnore]
         public MetaString TitleMeta => new MetaString(Title, TitleUnicode);
+        [SectionIgnore]
         public MetaString ArtistMeta => new MetaString(Artist, ArtistUnicode);
     }
 }

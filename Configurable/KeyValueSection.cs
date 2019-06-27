@@ -115,6 +115,7 @@ namespace OSharp.Beatmap.Configurable
                 string key = name;
                 string value = null;
                 var rawObj = prop.GetValue(this);
+                if (rawObj is null) continue;
 
                 var attr = prop.GetCustomAttribute<SectionConverterAttribute>(false);
                 if (attr != null)
@@ -160,7 +161,7 @@ namespace OSharp.Beatmap.Configurable
                 }
 
                 if (value == null) value = rawObj.ToString();
-                textWriter.WriteLine($"{key}: {value}");
+                textWriter.WriteLine($"{key}{KeyValueFlag}{value}");
             }
         }
 
