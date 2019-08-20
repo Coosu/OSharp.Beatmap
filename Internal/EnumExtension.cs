@@ -20,5 +20,22 @@ namespace OSharp.Beatmap.Internal
             }
             return (T)Enum.Parse(typeof(T), value);
         }
+
+        internal static string ParseToCode(this SliderType sliderType)
+        {
+            switch (sliderType)
+            {
+                case SliderType.Linear:
+                    return "L";
+                case SliderType.Perfect:
+                    return "P";
+                case SliderType.Bezier:
+                    return "B";
+                case SliderType.Catmull:
+                    return "C";
+                default:
+                    throw new ArgumentOutOfRangeException(nameof(sliderType), sliderType, null);
+            }
+        }
     }
 }

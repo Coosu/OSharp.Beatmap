@@ -169,7 +169,8 @@ namespace OSharp.Beatmap.Sections
             }
             else
                 lastLine = lastLines[0];
-            hitObject.SliderInfo = new SliderInfo(hitObject.Offset, lastRedLine.Factor, _difficulty.SliderMultiplier * lastLine.Multiple)
+            hitObject.SliderInfo = new SliderInfo(new Point(hitObject.X, hitObject.Y), hitObject.Offset,
+                lastRedLine.Factor, _difficulty.SliderMultiplier * lastLine.Multiple)
             {
                 CurvePoints = points,
                 EdgeAdditions = edgeAdditions,
@@ -190,7 +191,12 @@ namespace OSharp.Beatmap.Sections
 
         private void ConvertToHold(RawHitObject hitObject, string notImplementedInfo)
         {
-            //throw new NotImplementedException();
+            var index = notImplementedInfo.IndexOf(":");
+           
+            var holdEnd = notImplementedInfo.Substring(0, index);
+            var extra = notImplementedInfo.Substring(index + 1);
+            hitObject.HoldEnd = int.Parse(holdEnd);
+            hitObject.Extras = extra;
         }
 
         public override void AppendSerializedString(TextWriter textWriter)

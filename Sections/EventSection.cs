@@ -132,7 +132,8 @@ namespace OSharp.Beatmap.Sections
 
             textWriter.WriteLine(_sbInfo.ToString().TrimEnd('\r', '\n'));
             textWriter.WriteLine(SectionSbSamples);
-            foreach (var sampleData in SampleInfo)
+            var validSampleList = SampleInfo.Where(k => k.Volume > 0);
+            foreach (var sampleData in validSampleList)
             {
                 textWriter.WriteLine(sampleData); //optimize
             }

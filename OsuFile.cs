@@ -34,13 +34,13 @@ namespace OSharp.Beatmap
         public override string ToString() => Path;
 
         //todo: not optimized
-        public void WriteOsuFile(string path)
+        public void WriteOsuFile(string path, string newDiffName = null)
         {
             File.WriteAllText(path,
                 string.Format("osu file format v{0}\r\n\r\n{1}{2}{3}{4}{5}{6}{7}{8}", Version,
                     General?.ToSerializedString(),
                     Editor?.ToSerializedString(),
-                    Metadata?.ToSerializedString(),
+                    Metadata?.ToSerializedString(newDiffName),
                     Difficulty?.ToSerializedString(),
                     Events?.ToSerializedString(),
                     TimingPoints?.ToSerializedString(),
@@ -74,6 +74,15 @@ namespace OSharp.Beatmap
             Metadata.Title,
             Metadata.Creator,
             Metadata.Version != "" ? $" [{Metadata.Version}]" : ""));
+
+        public string GetPath(string newDiffName)
+        {
+            return Common.IO.File.EscapeFileName(string.Format("{0} - {1} ({2}){3}.osu",
+                Metadata.Artist,
+                Metadata.Title,
+                Metadata.Creator,
+                Metadata.Version != "" ? $" [{newDiffName}]" : ""));
+        }
 
     }
 }

@@ -41,29 +41,112 @@ namespace OSharp.Beatmap.Sections.HitObject
         }
         public HitsoundType Hitsound { get; set; }
         public SliderInfo SliderInfo { get; set; }
+        public int HoldEnd { get; set; }
         public string Extras { get; set; }
 
         // extended
-        public ObjectSamplesetType SampleSet => Extras?.Split(':')[0].ParseToEnum<ObjectSamplesetType>() ?? default;
-        public ObjectSamplesetType AdditionSet => Extras?.Split(':')[1].ParseToEnum<ObjectSamplesetType>() ?? default;
-        public int CustomIndex => Extras == null ? 0 : int.Parse(Extras.Split(':')[2]);
-        public int SampleVolume => Extras == null
-            ? 0
-            : (Extras.Split(':').Length > 3
-                ? int.Parse(Extras.Split(':')[3])
-                : 0);
-        public string FileName => Extras == null
-            ? ""
-            : (Extras.Split(':').Length > 4
-                ? Extras.Split(':')[4]
-                : "");
+        public ObjectSamplesetType SampleSet
+        {
+            get { return Extras?.Split(new[] { ':' }, StringSplitOptions.RemoveEmptyEntries)[0].ParseToEnum<ObjectSamplesetType>() ?? default; }
+            set
+            {
+                var array = Extras?.Split(new[] { ':' }, StringSplitOptions.RemoveEmptyEntries);
+                if (array != null && array.Length > 0)
+                {
+                    array[0] = ((int)value).ToString();
+                    Extras = string.Join(":", array) + ":";
+                }
+            }
+        }
+
+        public ObjectSamplesetType AdditionSet
+        {
+            get { return Extras?.Split(new[] { ':' }, StringSplitOptions.RemoveEmptyEntries)[1].ParseToEnum<ObjectSamplesetType>() ?? default; }
+            set
+            {
+                var array = Extras?.Split(new[] { ':' }, StringSplitOptions.RemoveEmptyEntries);
+                if (array != null && array.Length > 1)
+                {
+                    array[1] = ((int)value).ToString();
+                    Extras = string.Join(":", array) + ":";
+                }
+            }
+        }
+
+        public int CustomIndex
+        {
+            get => Extras == null ? 0 : int.Parse(Extras.Split(new[] { ':' }, StringSplitOptions.RemoveEmptyEntries)[2]);
+            set
+            {
+                var array = Extras?.Split(new[] { ':' }, StringSplitOptions.RemoveEmptyEntries);
+                if (array != null && array.Length > 2)
+                {
+                    array[2] = value.ToString();
+                    Extras = string.Join(":", array) + ":";
+                }
+            }
+        }
+
+        public int SampleVolume
+        {
+            get =>
+                Extras == null
+                    ? 0
+                    : (Extras.Split(':').Length > 3
+                        ? int.Parse(Extras.Split(':')[3])
+                        : 0);
+            set
+            {
+                var array = Extras?.Split(':');
+                if (array != null && array.Length > 3)
+                {
+                    array[3] = value.ToString();
+                    Extras = string.Join(":", array);
+                }
+            }
+        }
+
+        public string FileName
+        {
+            get =>
+                Extras == null
+                    ? ""
+                    : (Extras.Split(':').Length > 4
+                        ? Extras.Split(':')[4]
+                        : "");
+            set
+            {
+                var array = Extras?.Split(':');
+                if (array != null && array.Length > 4)
+                {
+                    array[4] = value;
+                    Extras = string.Join(":", array);
+                }
+            }
+        }
+
         public string NotImplementedInfo { get; set; }
 
-        public override string ToString() => $"{X},{Y},{Offset},{NotImplementedInfo}";
+        public override string ToString()
+        {
+            switch (ObjectType)
+            {
+                case HitObjectType.Circle:
+                    return $"{X},{Y},{Offset},{(int)RawType},{(int)Hitsound}{(Extras == null ? "" : "," + Extras)}";
+                case HitObjectType.Slider:
+                    return $"{X},{Y},{Offset},{(int)RawType},{(int)Hitsound},{SliderInfo}{(Extras == null ? "" : "," + Extras)}";
+                case HitObjectType.Spinner:
+                    throw new NotImplementedException();
+                case HitObjectType.Hold:
+                    return $"{X},{Y},{Offset},{(int)RawType},{(int)Hitsound},{HoldEnd}:{Extras ?? ""}";
+                default:
+                    throw new ArgumentOutOfRangeException();
+            }
+        }
 
         public override void AppendSerializedString(TextWriter textWriter)
         {
-            textWriter.WriteLine($"{X},{Y},{Offset},{NotImplementedInfo}");
+            textWriter.WriteLine(ToString());
         }
     }
 }

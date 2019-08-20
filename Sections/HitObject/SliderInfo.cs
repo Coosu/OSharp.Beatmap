@@ -1,5 +1,8 @@
-﻿using System.Drawing;
+﻿using System;
+using System.Collections.Generic;
+using System.Drawing;
 using System.Linq;
+using OSharp.Beatmap.Internal;
 
 namespace OSharp.Beatmap.Sections.HitObject
 {
@@ -18,11 +21,12 @@ namespace OSharp.Beatmap.Sections.HitObject
         public ObjectSamplesetType[] EdgeAdditions { get; set; }
 
         //extension
-        public Point StartPoint => CurvePoints.First();
+        public Point StartPoint { get; }
         public Point EndPoint => CurvePoints.Last();
 
-        public SliderInfo(int offset, double beatDuration, double sliderMultiplier)
+        public SliderInfo(Point startPoint, int offset, double beatDuration, double sliderMultiplier)
         {
+            StartPoint = startPoint;
             _offset = offset;
             _beatDuration = beatDuration;
             _sliderMultiplier = sliderMultiplier;
@@ -49,6 +53,44 @@ namespace OSharp.Beatmap.Sections.HitObject
 
                 return edges;
             }
+        }
+        public override string ToString()
+        {
+            var sampleList = new List<(ObjectSamplesetType, ObjectSamplesetType)>();
+            string edgeSampleStr;
+            string edgeHitsoundStr;
+            if (EdgeSamples != null)
+            {
+                for (var i = 0; i < EdgeSamples.Length; i++)
+                {
+                    var objectSamplesetType = EdgeSamples[i];
+                    var objectAdditionType = EdgeAdditions[i];
+                    sampleList.Add((objectSamplesetType, objectAdditionType));
+                }
+
+                edgeSampleStr = "," + string.Join("|", sampleList.Select(k => $"{(int)k.Item1}:{(int)k.Item2}"));
+            }
+            else
+            {
+                edgeSampleStr = "";
+            }
+
+            if (EdgeHitsounds != null)
+            {
+                edgeHitsoundStr = "," + string.Join("|", EdgeHitsounds.Select(k => $"{(int)k}"));
+            }
+            else
+            {
+                edgeHitsoundStr = "";
+            }
+
+            return string.Format("{0}|{1},{2},{3}{4}{5}",
+                SliderType.ParseToCode(),
+                string.Join("|", CurvePoints.Select(k => $"{k.X}:{k.Y}")),
+                Repeat,
+                PixelLength,
+                edgeHitsoundStr,
+                edgeSampleStr);
         }
     }
 
