@@ -186,13 +186,20 @@ namespace OSharp.Beatmap.Sections
 
         private void ConvertToSpinner(RawHitObject hitObject, string notImplementedInfo)
         {
-            //throw new NotImplementedException();
+            var arr = notImplementedInfo.Split(',');
+            var holdEnd = arr[0];
+            hitObject.HoldEnd = int.Parse(holdEnd);
+            if (arr.Length > 1)
+            {
+                var extra = arr[1];
+                hitObject.Extras = extra;
+            }
         }
 
         private void ConvertToHold(RawHitObject hitObject, string notImplementedInfo)
         {
             var index = notImplementedInfo.IndexOf(":");
-           
+
             var holdEnd = notImplementedInfo.Substring(0, index);
             var extra = notImplementedInfo.Substring(index + 1);
             hitObject.HoldEnd = int.Parse(holdEnd);
