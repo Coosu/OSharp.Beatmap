@@ -96,7 +96,7 @@ namespace OSharp.Beatmap.Sections
                         }
                         break;
                     case SectionSbSamples:
-                        if (line.StartsWith("Sample,"))
+                        if (line.StartsWith("Sample,") || line.StartsWith("5,"))
                         {
                             var infos = line.Split(',');
                             SampleInfo.Add(new StoryboardSampleData
