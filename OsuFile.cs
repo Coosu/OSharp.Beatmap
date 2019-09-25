@@ -57,7 +57,7 @@ namespace OSharp.Beatmap
                 var str = line.Replace(verFlag, "");
                 if (!int.TryParse(str, out var verNum))
                     throw new BadOsuFormatException("未知的osu版本: " + str);
-                if (verNum < 7)
+                if (verNum < 5)
                     throw new VersionNotSupportedException(verNum);
                 Version = verNum;
             }
