@@ -29,8 +29,8 @@ namespace OSharp.Beatmap.Sections
                 TimingSampleset = (TimingSamplesetType)(int.Parse(param[3]) - 1),
                 Track = int.Parse(param[4]),
                 Volume = int.Parse(param[5]),
-                Inherit = !Convert.ToBoolean(int.Parse(param[6])),
-                Kiai = Convert.ToBoolean(int.Parse(param[7])),
+                Inherit = param.Length > 6 && !Convert.ToBoolean(int.Parse(param[6])),
+                Kiai = param.Length > 7 && Convert.ToBoolean(int.Parse(param[7])),
                 Positive = double.Parse(param[1]) >= 0
             });
         }

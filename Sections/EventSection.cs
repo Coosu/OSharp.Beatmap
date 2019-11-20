@@ -111,7 +111,7 @@ namespace OSharp.Beatmap.Sections
                                     Offset = int.Parse(infos[1]),
                                     MagicalInt = int.Parse(infos[2]),
                                     Filename = infos[3].Trim('"'),
-                                    Volume = int.Parse(infos[4]),
+                                    Volume = infos.Length > 4 ? int.Parse(infos[4]) : 0,
                                 });
                             }
                         break;
