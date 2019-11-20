@@ -20,13 +20,13 @@ namespace OSharp.Beatmap
         public ColorSection Colours { get; set; }
         public HitObjectSection HitObjects { get; set; }
 
-        public static async Task<OsuFile> ReadFromFileAsync(string path)
+        public static async Task<OsuFile> ReadFromFileAsync(string path, Action<ReadOptions> readOptionFactory = null)
         {
             return await Task.Run(() =>
             {
                 using (StreamReader sr = new StreamReader(path))
                 {
-                    return ConfigConvert.DeserializeObject<OsuFile>(sr);
+                    return ConfigConvert.DeserializeObject<OsuFile>(sr, readOptionFactory);
                 }
             });
         }

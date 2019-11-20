@@ -18,13 +18,19 @@ namespace OSharp.Beatmap.Configurable
             }
         }
 
-        public static T DeserializeObject<T>(TextReader reader, bool sequential = false) where T : Config
+        public static T DeserializeObject<T>(TextReader reader, Action<ReadOptions> readOptionFactory = null, bool sequential = false) where T : Config
         {
             var reflectInfos = AnalyzeType<T>();
             var type = typeof(T);
             var instance = (T)Activator.CreateInstance(type, true);
             var line = reader.ReadLine();
             Section currentSection = null;
+            bool skippingSection = false;
+            var options = new ReadOptions();
+            readOptionFactory?.Invoke(options);
+            instance.Options = options;
+            var list = new List<string>(options.Include);
+
             while (line != null)
             {
                 if (string.IsNullOrWhiteSpace(line))
@@ -35,15 +41,41 @@ namespace OSharp.Beatmap.Configurable
 
                 if (MatchedSection(line, out var sectionName))
                 {
+                    if (options.IncludeMode == true && list.Count == 0)
+                    {
+                        break;
+                    }
+
+                    if (options.IncludeMode == null)
+                    {
+                        skippingSection = false;
+                    }
+                    else if (options.IncludeMode == true && !options.Include.Contains(sectionName))
+                    {
+                        skippingSection = true;
+                        list.Remove(sectionName);
+                    }
+                    else if (options.IncludeMode == false && options.Exclude.Contains(sectionName))
+                    {
+                        skippingSection = true;
+                    }
+                    else
+                    {
+                        skippingSection = false;
+                    }
+
                     var matched = reflectInfos.SingleOrDefault(k => k.Name == sectionName);
                     if (matched != null)
                     {
-                        var constructors = matched.Type.GetConstructor(new[] { type });
-                        if (constructors != null)
-                            currentSection = Activator.CreateInstance(matched.Type, instance) as Section;
-                        else
-                            currentSection = Activator.CreateInstance(matched.Type) as Section;
-                        matched.PropertyInfo.SetValue(instance, currentSection);
+                        if (!skippingSection)
+                        {
+                            var constructors = matched.Type.GetConstructor(new[] { type });
+                            if (constructors != null)
+                                currentSection = Activator.CreateInstance(matched.Type, instance) as Section;
+                            else
+                                currentSection = Activator.CreateInstance(matched.Type) as Section;
+                            matched.PropertyInfo.SetValue(instance, currentSection);
+                        }
                     }
                     else
                     {
@@ -52,11 +84,14 @@ namespace OSharp.Beatmap.Configurable
                 }
                 else
                 {
-                    if (currentSection != null)
-                        currentSection.Match(line);
-                    else
+                    if (!skippingSection)
                     {
-                        instance.HandleCustom(line);
+                        if (currentSection != null)
+                            currentSection.Match(line);
+                        else
+                        {
+                            instance.HandleCustom(line);
+                        }
                     }
                 }
 

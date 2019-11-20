@@ -19,9 +19,15 @@ namespace OSharp.Beatmap.Sections
         public List<RangeValue<int>> Breaks { get; set; } = new List<RangeValue<int>>();
         public ElementGroup ElementGroup { get; set; }
 
+        public EventSection(OsuFile osuFile)
+        {
+            _options = osuFile.Options;
+        }
+
         private readonly StringBuilder _sbInfo = new StringBuilder();
         private readonly Dictionary<string, StringBuilder> _unknownSection = new Dictionary<string, StringBuilder>();
         private string _currentSection;
+        private ReadOptions _options;
 
         private const string SectionBgVideo = "//Background and Video events";
         private const string SectionBreak = "//Break Periods";
@@ -42,7 +48,7 @@ namespace OSharp.Beatmap.Sections
                         _currentSection = SectionBreak;
                         break;
                     case SectionSbSamples:
-                        ElementGroup = ElementGroup.ParseFromText(_sbInfo.ToString().Trim('\r', '\n'));
+                        if (!_options.StoryboardIgnored) ElementGroup = ElementGroup.ParseFromText(_sbInfo.ToString().Trim('\r', '\n'));
                         _currentSection = SectionSbSamples;
                         break;
                     default:
@@ -96,20 +102,21 @@ namespace OSharp.Beatmap.Sections
                         }
                         break;
                     case SectionSbSamples:
-                        if (line.StartsWith("Sample,") || line.StartsWith("5,"))
-                        {
-                            var infos = line.Split(',');
-                            SampleInfo.Add(new StoryboardSampleData
+                        if (!_options.SampleIgnored)
+                            if (line.StartsWith("Sample,") || line.StartsWith("5,"))
                             {
-                                Offset = int.Parse(infos[1]),
-                                MagicalInt = int.Parse(infos[2]),
-                                Filename = infos[3].Trim('"'),
-                                Volume = int.Parse(infos[4]),
-                            });
-                        }
+                                var infos = line.Split(',');
+                                SampleInfo.Add(new StoryboardSampleData
+                                {
+                                    Offset = int.Parse(infos[1]),
+                                    MagicalInt = int.Parse(infos[2]),
+                                    Filename = infos[3].Trim('"'),
+                                    Volume = int.Parse(infos[4]),
+                                });
+                            }
                         break;
                     case SectionStoryboard:
-                        _sbInfo.AppendLine(line);
+                        if (!_options.StoryboardIgnored) _sbInfo.AppendLine(line);
                         break;
                     default:
                         _unknownSection[_currentSection].AppendLine(line);
