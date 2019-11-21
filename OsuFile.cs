@@ -28,7 +28,7 @@ namespace OSharp.Beatmap
                 {
                     return ConfigConvert.DeserializeObject<OsuFile>(sr, readOptionFactory);
                 }
-            });
+            }).ConfigureAwait(false);
         }
 
         public override string ToString() => Path;
