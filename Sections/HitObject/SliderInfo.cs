@@ -75,29 +75,40 @@ namespace OSharp.Beatmap.Sections.HitObject
                     var totalLength = lengths.Sum();
                     int i = 1;
                     var offset = i * _beatDuration;
+                    var reversableList = new ReversableList<double>(lengths);
+                    double prevRelativeLen = 0;
                     while (offset < _singleElapsedTime * Repeat)
                     {
                         if (!Edges.Any(k => Math.Abs(k.Offset - offset) < 0.01))
                         {
-                            var isNegative = (int)(offset / _singleElapsedTime) % 2 != 0;
-                            var ratio = (offset % _singleElapsedTime) / _singleElapsedTime;
-                            var relativeLen = totalLength * ratio;
-                            if (isNegative)
+                            var ratio = (offset) / _singleElapsedTime * Repeat;
+                            var relativeLen = totalLength * Repeat * ratio;
+                            var tuple = reversableList.GetNext();
+                            while (prevRelativeLen + tuple.element < relativeLen)
                             {
-                                for (int j = 0; j < lengths.Count; j++)
-                                {
-                                    var item = lengths[j];
-
-                                }
+                                tuple = reversableList.GetNext();
                             }
-                            else
-                            {
-                                for (int j = lengths.Count - 1; j >= 0; j--)
-                                {
-                                    var item = lengths[j];
 
-                                }
-                            }
+                            //var isNegative = (int)(offset / _singleElapsedTime) % 2 != 0;
+                            //var ratio = (offset % _singleElapsedTime) / _singleElapsedTime;
+                            //var relativeLen = totalLength * ratio;
+                            //if (isNegative)
+                            //{
+                            //    for (int j = 0; j < lengths.Count; j++)
+                            //    {
+                            //        var item = lengths[j];
+
+                            //    }
+                            //}
+                            //else
+                            //{
+                            //    for (int j = lengths.Count - 1; j >= 0; j--)
+                            //    {
+                            //        var item = lengths[j];
+
+                            //    }
+                            //}
+                            prevRelativeLen = relativeLen;
                         }
 
                         i++;
@@ -199,6 +210,51 @@ namespace OSharp.Beatmap.Sections.HitObject
             }
 
             return list;
+        }
+    }
+
+    public class ReversableList<T>
+    {
+        private (int index, T element)? _current;
+        private readonly List<T> _list;
+        //private readonly bool _initialReverse;
+        private bool _currentReverse = false;
+        public ReversableList(List<T> list/*, bool initialReverse = false*/)
+        {
+            _list = list;
+            //_initialReverse = initialReverse;
+        }
+
+        public (int index, T element) GetNext()
+        {
+            if (_current == null)
+            {
+                _current = (0, _list[0]);
+                _currentReverse = false;
+
+                return _current.Value;
+            }
+            else
+            {
+                if (!_currentReverse && _current.Value.index == _list.Count - 1)
+                {
+                    _currentReverse = false;
+                    var index = _list.Count - 1;
+                    _current = (index, _list[index]);
+                }
+                else if (_currentReverse && _current.Value.index == 0)
+                {
+                    _currentReverse = true;
+                    _current = (0, _list[0]);
+                }
+                else
+                {
+                    var index = _currentReverse ? _current.Value.index - 1 : _current.Value.index + 1;
+                    _current = (index, _list[index]);
+                }
+
+                return _current.Value;
+            }
         }
     }
 
