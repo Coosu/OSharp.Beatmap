@@ -8,6 +8,14 @@ namespace OSharp.Beatmap.Sections.HitObject
 {
     public class RawHitObject : SerializeWritableObject
     {
+        private string _extras;
+        private bool _extraInitial;
+        private ObjectSamplesetType _sampleSet;
+        private ObjectSamplesetType _additionSet;
+        private int _customIndex;
+        private int _sampleVolume;
+        private string _fileName;
+
         public int X { get; set; }
         public int Y { get; set; }
         public int Offset { get; set; }
@@ -45,47 +53,82 @@ namespace OSharp.Beatmap.Sections.HitObject
 
         public string Extras
         {
-            get => $"{(int)SampleSet}:{(int)AdditionSet}:{CustomIndex}:{SampleVolume}:{FileName}";
+            get => _extras;
             set
             {
-                var arr = value?.Split(new[] { ':' }, StringSplitOptions.RemoveEmptyEntries);
-                if (arr != null)
-                {
-                    if (arr.Length > 0)
-                    {
-                        SampleSet = arr[0].ParseToEnum<ObjectSamplesetType>();
-                    }
-                    if (arr.Length > 1)
-                    {
-                        AdditionSet = arr[1].ParseToEnum<ObjectSamplesetType>();
-                    }
-                    if (arr.Length > 2)
-                    {
-                        CustomIndex = int.Parse(arr[2]);
-                    }
-                    if (arr.Length > 3)
-                    {
-                        SampleVolume = int.Parse(arr[3]);
-                    }
-                    if (arr.Length > 4)
-                    {
-                        FileName = arr[4];
-                    }
-                }
+                _extras = value;
+                _extraInitial = false;
             }
         }
 
-        public ObjectSamplesetType SampleSet { get; set; }
+        #region Extras
 
-        public ObjectSamplesetType AdditionSet { get; set; }
+        public ObjectSamplesetType SampleSet
+        {
+            get
+            {
+                if (_extraInitial) InitialExtra();
+                return _sampleSet;
+            }
+            set => _sampleSet = value;
+        }
 
-        public int CustomIndex { get; set; }
+        public ObjectSamplesetType AdditionSet
+        {
+            get
+            {
+                if (_extraInitial) InitialExtra();
+                return _additionSet;
+            }
+            set => _additionSet = value;
+        }
 
-        public int SampleVolume { get; set; }
+        public int CustomIndex
+        {
+            get
+            {
+                if (_extraInitial) InitialExtra();
+                return _customIndex;
+            }
+            set => _customIndex = value;
+        }
 
-        public string FileName { get; set; }
+        public int SampleVolume
+        {
+            get
+            {
+                if (_extraInitial) InitialExtra();
+                return _sampleVolume;
+            }
+            set => _sampleVolume = value;
+        }
 
-        //public string NotImplementedInfo { get; set; }
+        public string FileName
+        {
+            get
+            {
+                if (_extraInitial) InitialExtra();
+                return _fileName;
+            }
+            set => _fileName = value;
+        }
+
+        private void InitialExtra()
+        {
+            if (!string.IsNullOrWhiteSpace(Extras))
+            {
+                var arr = Extras.Split(new[] { ':' }, StringSplitOptions.RemoveEmptyEntries);
+                if (arr.Length > 0) SampleSet = arr[0].ParseToEnum<ObjectSamplesetType>();
+                if (arr.Length > 1) AdditionSet = arr[1].ParseToEnum<ObjectSamplesetType>();
+                if (arr.Length > 2) CustomIndex = int.Parse(arr[2]);
+                if (arr.Length > 3) SampleVolume = int.Parse(arr[3]);
+                if (arr.Length > 4) FileName = arr[4];
+            }
+
+            _extraInitial = true;
+        }
+
+        #endregion
 
         public override string ToString()
         {
@@ -94,7 +137,9 @@ namespace OSharp.Beatmap.Sections.HitObject
                 case HitObjectType.Circle:
                     return $"{X},{Y},{Offset},{(int)RawType},{(int)Hitsound}{(Extras == null ? "" : "," + Extras)}";
                 case HitObjectType.Slider:
-                    return $"{X},{Y},{Offset},{(int)RawType},{(int)Hitsound},{SliderInfo}{(Extras == null ? "" : "," + Extras)}";
+                    return string.Format("{0},{1},{2},{3},{4},{5}{6}",
+                        X, Y, Offset, (int)RawType, (int)Hitsound, SliderInfo,
+                        Extras == null ? "" : "," + Extras);
                 case HitObjectType.Spinner:
                     return $"{X},{Y},{Offset},{(int)RawType},{(int)Hitsound},{HoldEnd},{Extras ?? ""}";
                 case HitObjectType.Hold:

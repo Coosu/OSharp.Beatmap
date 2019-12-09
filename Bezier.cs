@@ -10,7 +10,6 @@ namespace OSharp.Beatmap
         /// 绘制n阶贝塞尔曲线路径
         /// </summary>
         /// <param name="points">输入点</param>
-        /// <param name="count">点数(n+1)</param>
         /// <param name="step">步长,步长越小，轨迹点越密集</param>
         /// <returns></returns>
         public static Vector2[] GetBezierTrail(IReadOnlyList<Vector2> points, float step)
@@ -32,10 +31,10 @@ namespace OSharp.Beatmap
         /// n阶贝塞尔曲线插值计算函数
         /// 根据起点，n个控制点，终点 计算贝塞尔曲线插值
         /// </summary>
-        /// <param name="t">当前插值位置0~1 ，0为起点，1为终点</param>
+        /// <param name="ratio">当前插值位置0~1 ，0为起点，1为终点</param>
         /// <param name="points">起点，n-1个控制点，终点</param>
         /// <returns></returns>
-        private static Vector2 CalcPoint(float t, IReadOnlyList<Vector2> points)
+        public static Vector2 CalcPoint(float ratio, IReadOnlyList<Vector2> points)
         {
             float sumX = 0, sumY = 0;
             var count = points.Count;
@@ -43,8 +42,8 @@ namespace OSharp.Beatmap
             {
                 int order = count - 1; // 阶数
                 var combination = CalcCombination(order, i);
-                sumX += (float)(combination * points[i].X * Math.Pow(1 - t, order - i) * Math.Pow(t, i));
-                sumY += (float)(combination * points[i].Y * Math.Pow(1 - t, order - i) * Math.Pow(t, i));
+                sumX += (float)(combination * points[i].X * Math.Pow(1 - ratio, order - i) * Math.Pow(ratio, i));
+                sumY += (float)(combination * points[i].Y * Math.Pow(1 - ratio, order - i) * Math.Pow(ratio, i));
             }
 
             var vector2 = new Vector2(sumX, sumY);
