@@ -17,9 +17,13 @@ namespace OSharp.Beatmap
                 if (n > -1)
                 {
                     list.Add(span.Slice(0, n).ToString());
-                    span = span.Slice(n + span.Length);
+                    span = span.Slice(n + 1);
                 }
-                else break;
+                else
+                {
+                    list.Add(span.ToString());
+                    break;
+                }
             }
 
             //Marshal.AllocHGlobal(Int32.MaxValue);

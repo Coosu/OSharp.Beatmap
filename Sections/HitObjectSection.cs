@@ -93,7 +93,7 @@ namespace OSharp.Beatmap.Sections
             {
                 var point = curveInfo[i];
                 var xy = point.SpanSplit(":");
-                points[i] = new Vector2(int.Parse(xy[0]), int.Parse(xy[1]));
+                points[i - 1] = new Vector2(int.Parse(xy[0]), int.Parse(xy[1]));
             }
 
             // repeat
@@ -180,14 +180,16 @@ namespace OSharp.Beatmap.Sections
             }
             else lastLine = lastLines[0];
 
-            hitObject.SliderInfo = new SliderInfo(new Vector2(hitObject.X, hitObject.Y), hitObject.Offset,
-                lastRedLine.Factor, _difficulty.SliderMultiplier * lastLine.Multiple)
+            hitObject.SliderInfo = new SliderInfo(new Vector2(hitObject.X, hitObject.Y),
+                hitObject.Offset,
+                lastRedLine.Factor,
+                _difficulty.SliderMultiplier * lastLine.Multiple,
+                _difficulty.SliderTickRate, pixelLength)
             {
                 CurvePoints = points,
                 EdgeAdditions = edgeAdditions,
                 EdgeHitsounds = edgeHitsounds,
                 EdgeSamples = edgeSamples,
-                PixelLength = pixelLength,
                 Repeat = repeat,
                 SliderType = sliderType.ParseToEnum<SliderType>()
             };
