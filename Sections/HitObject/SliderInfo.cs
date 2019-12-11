@@ -77,7 +77,21 @@ namespace OSharp.Beatmap.Sections.HitObject
                 if (_ticks == null)
                 {
                     var tickInterval = _beatDuration / _tickRate;
-                    var ticks = GetDiscreteBallData(tickInterval);
+
+                    SliderTick[] ticks;
+                    switch (SliderType)
+                    {
+                        case SliderType.Bezier:
+                        case SliderType.Linear:
+                            ticks = GetBezierDiscreteBallData(tickInterval);
+                            break;
+                        case SliderType.Perfect:
+                            ticks = GetPerfectDiscreteBallData(tickInterval);
+                            break;
+                        default:
+                            ticks = Array.Empty<SliderTick>();
+                            break;
+                    }
                     _ticks = ticks.ToArray();
                 }
 
@@ -93,7 +107,7 @@ namespace OSharp.Beatmap.Sections.HitObject
                 {
                     // 60fps
                     var interval = 1000 / 60d;
-                    var ticks = GetDiscreteBallData(interval);
+                    var ticks = GetBezierDiscreteBallData(interval);
                     _ballTrail = ticks.ToArray();
                 }
 
@@ -114,7 +128,46 @@ namespace OSharp.Beatmap.Sections.HitObject
             return (-1, -1);
         }
 
-        private SliderTick[] GetDiscreteBallData(double interval)
+        // todo: not cut by rhythm
+        // todo: i forget math
+        private SliderTick[] GetPerfectDiscreteBallData(double interval)
+        {
+            //if (interval >= _singleElapsedTime)
+            //{
+            //    return Array.Empty<SliderTick>();
+            //}
+
+            var p1 = StartPoint;
+            var p2 = CurvePoints[0];
+            var p3 = CurvePoints[1];
+
+            var circle = GetCircle(p1, p2, p3);
+
+            var radStart = Math.Atan2(p1.Y - circle.p.Y, p1.X - circle.p.X);
+            var radMid = Math.Atan2(p2.Y - circle.p.Y, p2.X - circle.p.X);
+            var radEnd = Math.Atan2(p3.Y - circle.p.Y, p3.X - circle.p.X);
+            var degStart = radStart / Math.PI * 180;
+            var degMid = radMid / Math.PI * 180;
+            var degEnd = radEnd / Math.PI * 180;
+            return Array.Empty<SliderTick>();
+        }
+
+        private static (Vector2 p, double r) GetCircle(Vector2 p1, Vector2 p2, Vector2 p3)
+        {
+            var e = 2 * (p2.X - p1.X);
+            var f = 2 * (p2.Y - p1.Y);
+            var g = Math.Pow(p2.X, 2) - Math.Pow(p1.X, 2) + Math.Pow(p2.Y, 2) - Math.Pow(p1.Y, 2);
+            var a = 2 * (p3.X - p2.X);
+            var b = 2 * (p3.Y - p2.Y);
+            var c = Math.Pow(p3.X, 2) - Math.Pow(p2.X, 2) + Math.Pow(p3.Y, 2) - Math.Pow(p2.Y, 2);
+            var x = (g * b - c * f) / (e * b - a * f);
+            var y = (a * g - c * e) / (a * f - b * e);
+            var r = Math.Pow(Math.Pow(x - p1.X, 2) + Math.Pow(y - p1.Y, 2), 0.5);
+            return (new Vector2((float)x, (float)y), r);
+        }
+
+        // todo: not cut by rhythm
+        private SliderTick[] GetBezierDiscreteBallData(double interval)
         {
             if (interval >= _singleElapsedTime)
             {
