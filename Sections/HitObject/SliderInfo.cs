@@ -107,7 +107,20 @@ namespace OSharp.Beatmap.Sections.HitObject
                 {
                     // 60fps
                     var interval = 1000 / 60d;
-                    var ticks = GetBezierDiscreteBallData(interval);
+                    SliderTick[] ticks;
+                    switch (SliderType)
+                    {
+                        case SliderType.Bezier:
+                        case SliderType.Linear:
+                            ticks = GetBezierDiscreteBallData(interval);
+                            break;
+                        case SliderType.Perfect:
+                            ticks = GetPerfectDiscreteBallData(interval);
+                            break;
+                        default:
+                            ticks = Array.Empty<SliderTick>();
+                            break;
+                    }
                     _ballTrail = ticks.ToArray();
                 }
 
@@ -132,10 +145,10 @@ namespace OSharp.Beatmap.Sections.HitObject
         // todo: i forget math
         private SliderTick[] GetPerfectDiscreteBallData(double interval)
         {
-            //if (interval >= _singleElapsedTime)
-            //{
-            //    return Array.Empty<SliderTick>();
-            //}
+            if (Math.Round(interval - _singleElapsedTime) >= 0)
+            {
+                return Array.Empty<SliderTick>();
+            }
 
             var p1 = StartPoint;
             var p2 = CurvePoints[0];
@@ -146,6 +159,24 @@ namespace OSharp.Beatmap.Sections.HitObject
             var radStart = Math.Atan2(p1.Y - circle.p.Y, p1.X - circle.p.X);
             var radMid = Math.Atan2(p2.Y - circle.p.Y, p2.X - circle.p.X);
             var radEnd = Math.Atan2(p3.Y - circle.p.Y, p3.X - circle.p.X);
+            if (radMid - radStart > Math.PI)
+            {
+                radMid -= Math.PI * 2;
+            }
+            else if (radMid - radStart < -Math.PI)
+            {
+                radMid += Math.PI * 2;
+            }
+
+            if (radEnd - radMid > Math.PI)
+            {
+                radEnd -= Math.PI * 2;
+            }
+            else if (radEnd - radMid < -Math.PI)
+            {
+                radEnd += Math.PI * 2;
+            }
+
             var degStart = radStart / Math.PI * 180;
             var degMid = radMid / Math.PI * 180;
             var degEnd = radEnd / Math.PI * 180;
@@ -169,7 +200,7 @@ namespace OSharp.Beatmap.Sections.HitObject
         // todo: not cut by rhythm
         private SliderTick[] GetBezierDiscreteBallData(double interval)
         {
-            if (interval >= _singleElapsedTime)
+            if (Math.Round(interval - _singleElapsedTime) >= 0)
             {
                 return Array.Empty<SliderTick>();
             }
