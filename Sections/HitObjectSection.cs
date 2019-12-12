@@ -30,15 +30,15 @@ namespace OSharp.Beatmap.Sections
 
         public override void Match(string line)
         {
-            string[] param = line.Split(',');
+            string[] param = line.SpanSplit(",");
 
             var x = int.Parse(param[0]);
             var y = int.Parse(param[1]);
             var offset = int.Parse(param[2]);
             var type = (RawObjectType)Enum.Parse(typeof(RawObjectType), param[3]);
             var hitsound = (HitsoundType)Enum.Parse(typeof(HitsoundType), param[4]);
+            var others = string.Join(",", param.Skip(5));
 
-            var notImplementedInfo = string.Join(",", param.Skip(5));
             var hitObject = new RawHitObject
             {
                 X = x,
@@ -48,51 +48,61 @@ namespace OSharp.Beatmap.Sections
                 Hitsound = hitsound
             };
 
-            if (type.HasFlag(RawObjectType.Circle))
+            switch (hitObject.ObjectType)
             {
-                ConvertToCircle(hitObject, notImplementedInfo);
-            }
-            else if (type.HasFlag(RawObjectType.Slider))
-            {
-                ConvertToSlider(hitObject, notImplementedInfo);
-            }
-            else if (type.HasFlag(RawObjectType.Spinner))
-            {
-                ConvertToSpinner(hitObject, notImplementedInfo);
-            }
-            else if (type.HasFlag(RawObjectType.Hold))
-            {
-                ConvertToHold(hitObject, notImplementedInfo);
+                case HitObjectType.Circle:
+                    ToCircle(hitObject, others);
+                    break;
+                case HitObjectType.Slider:
+                    ToSlider(hitObject, others);
+                    break;
+                case HitObjectType.Spinner:
+                    ToSpinner(hitObject, others);
+                    break;
+                case HitObjectType.Hold:
+                    ToHold(hitObject, others);
+                    break;
+                default:
+                    throw new ArgumentOutOfRangeException();
             }
 
             HitObjectList.Add(hitObject);
         }
 
-        private void ConvertToCircle(RawHitObject hitObject, string notImplementedInfo)
+        private void ToCircle(RawHitObject hitObject, string others)
         {
-            bool isSupportExtra = notImplementedInfo.IndexOf(":", StringComparison.Ordinal) != -1;
-            hitObject.Extras = isSupportExtra ? notImplementedInfo : null;
+            // extra
+            hitObject.Extras = others;
         }
 
-        private void ConvertToSlider(RawHitObject hitObject, string notImplementedInfo)
+        private void ToSlider(RawHitObject hitObject, string others)
         {
-            string extra = notImplementedInfo.Split(',').Last();
-            bool isSupportExtra = extra.IndexOf(":", StringComparison.Ordinal) != -1;
-            var infos = notImplementedInfo.Split(',');
+            var infos = others.SpanSplit(",");
 
+            // extra
+            string notSureExtra = infos[infos.Length - 1];
+            bool supportExtra = notSureExtra.IndexOf(":", StringComparison.Ordinal) != -1;
+            hitObject.Extras = supportExtra ? notSureExtra : null;
+
+            // slider curve
+            var curveInfo = infos[0].SpanSplit("|");
             var sliderType = infos[0].Split('|')[0];
-            var curvePoints = infos[0].Split('|').Skip(1).ToArray();
-            Point[] points = new Point[curvePoints.Length];
-            for (var i = 0; i < curvePoints.Length; i++)
+
+            var points = new Vector2[curveInfo.Length - 1]; // curvePoints skip 1
+            for (var i = 1; i < curveInfo.Length; i++)
             {
-                var point = curvePoints[i];
-                var xy = point.Split(':').Select(int.Parse).ToArray();
-                points[i] = new Point(xy[0], xy[1]);
+                var point = curveInfo[i];
+                var xy = point.SpanSplit(":");
+                points[i - 1] = new Vector2(int.Parse(xy[0]), int.Parse(xy[1]));
             }
 
+            // repeat
             int repeat = int.Parse(infos[1]);
+
+            // length
             decimal pixelLength = decimal.Parse(infos[2]);
 
+            // edge hitsounds
             HitsoundType[] edgeHitsounds;
             ObjectSamplesetType[] edgeSamples;
             ObjectSamplesetType[] edgeAdditions;
@@ -104,19 +114,20 @@ namespace OSharp.Beatmap.Sections
             }
             else if (infos.Length == 4)
             {
-                edgeHitsounds = infos[3].Split('|').Select(t => t.ParseToEnum<HitsoundType>()).ToArray();
+                edgeHitsounds = infos[3].SpanSplit("|").Select(t => t.ParseToEnum<HitsoundType>()).ToArray();
                 edgeSamples = null;
                 edgeAdditions = null;
             }
             else
             {
-                edgeHitsounds = infos[3].Split('|').Select(t => t.ParseToEnum<HitsoundType>()).ToArray();
-                string[] edgeAdditionsStr = infos[4].Split('|');
+                edgeHitsounds = infos[3].SpanSplit("|").Select(t => t.ParseToEnum<HitsoundType>()).ToArray();
+                string[] edgeAdditionsStrArr = infos[4].SpanSplit("|");
                 edgeSamples = new ObjectSamplesetType[repeat + 1];
                 edgeAdditions = new ObjectSamplesetType[repeat + 1];
-                for (int i = 0; i < edgeAdditionsStr.Length; i++)
+
+                for (int i = 0; i < edgeAdditionsStrArr.Length; i++)
                 {
-                    var sampAdd = edgeAdditionsStr[i].Split(':');
+                    var sampAdd = edgeAdditionsStrArr[i].SpanSplit(":");
                     edgeSamples[i] = sampAdd[0].ParseToEnum<ObjectSamplesetType>();
                     edgeAdditions[i] = sampAdd[1].ParseToEnum<ObjectSamplesetType>();
                 }
@@ -167,41 +178,41 @@ namespace OSharp.Beatmap.Sections
                 //else
                 //    throw new RepeatTimingSectionException("存在同一时刻多条Timing Section。");
             }
-            else
-                lastLine = lastLines[0];
-            hitObject.SliderInfo = new SliderInfo(new Point(hitObject.X, hitObject.Y), hitObject.Offset,
-                lastRedLine.Factor, _difficulty.SliderMultiplier * lastLine.Multiple)
+            else lastLine = lastLines[0];
+
+            hitObject.SliderInfo = new SliderInfo(new Vector2(hitObject.X, hitObject.Y),
+                hitObject.Offset,
+                lastRedLine.Factor,
+                _difficulty.SliderMultiplier * lastLine.Multiple,
+                _difficulty.SliderTickRate, pixelLength)
             {
                 CurvePoints = points,
                 EdgeAdditions = edgeAdditions,
                 EdgeHitsounds = edgeHitsounds,
                 EdgeSamples = edgeSamples,
-                PixelLength = pixelLength,
                 Repeat = repeat,
                 SliderType = sliderType.ParseToEnum<SliderType>()
             };
-
-            hitObject.Extras = isSupportExtra ? extra : null;
         }
 
-        private void ConvertToSpinner(RawHitObject hitObject, string notImplementedInfo)
+        private void ToSpinner(RawHitObject hitObject, string others)
         {
-            var arr = notImplementedInfo.Split(',');
-            var holdEnd = arr[0];
+            var infos = others.SpanSplit(",");
+            var holdEnd = infos[0];
             hitObject.HoldEnd = int.Parse(holdEnd);
-            if (arr.Length > 1)
+            if (infos.Length > 1)
             {
-                var extra = arr[1];
+                var extra = infos[1];
                 hitObject.Extras = extra;
             }
         }
 
-        private void ConvertToHold(RawHitObject hitObject, string notImplementedInfo)
+        private void ToHold(RawHitObject hitObject, string others)
         {
-            var index = notImplementedInfo.IndexOf(":");
+            var index = others.SpanIndexOf(":");
 
-            var holdEnd = notImplementedInfo.Substring(0, index);
-            var extra = notImplementedInfo.Substring(index + 1);
+            var holdEnd = others.Substring(0, index);
+            var extra = others.Substring(index + 1);
             hitObject.HoldEnd = int.Parse(holdEnd);
             hitObject.Extras = extra;
         }

@@ -8,12 +8,8 @@ namespace OSharp.Beatmap.Sections.HitObject
 {
     public class SliderInfo
     {
-        private readonly int _offset;
-        private readonly double _beatDuration;
-        private readonly double _sliderMultiplier;
-
         public SliderType SliderType { get; set; }
-        public Point[] CurvePoints { get; set; }
+        public Vector2[] CurvePoints { get; set; }
         public int Repeat { get; set; }
         public decimal PixelLength { get; set; }
         public HitsoundType[] EdgeHitsounds { get; set; }
@@ -21,39 +17,258 @@ namespace OSharp.Beatmap.Sections.HitObject
         public ObjectSamplesetType[] EdgeAdditions { get; set; }
 
         //extension
-        public Point StartPoint { get; }
-        public Point EndPoint => CurvePoints.Last();
+        public Vector2 StartPoint { get; }
+        public Vector2 EndPoint => CurvePoints.Last();
 
-        public SliderInfo(Point startPoint, int offset, double beatDuration, double sliderMultiplier)
+        private double _singleElapsedTime;
+        private SliderEdge[] _edges;
+        private SliderTick[] _ticks;
+        private SliderTick[] _ballTrail;
+        private List<List<Vector2>> _rawBezierData;
+        private List<double> _rawBezierLengthData;
+
+        private readonly int _offset;
+        private readonly double _beatDuration;
+        private readonly double _sliderMultiplier;
+        private readonly double _tickRate;
+
+        public SliderInfo(Vector2 startPoint, int offset, double beatDuration, double sliderMultiplier, double tickRate, decimal pixelLength)
         {
             StartPoint = startPoint;
+            PixelLength = pixelLength;
             _offset = offset;
             _beatDuration = beatDuration;
             _sliderMultiplier = sliderMultiplier;
+            _tickRate = tickRate;
+            _singleElapsedTime = (double)(PixelLength / (100 * (decimal)_sliderMultiplier) * (decimal)_beatDuration);
         }
 
         public SliderEdge[] Edges
         {
             get
             {
-                SliderEdge[] edges = new SliderEdge[Repeat + 1];
-
-                for (var i = 0; i < edges.Length; i++)
+                if (_edges == null)
                 {
-                    var time = PixelLength / (100 * (decimal)_sliderMultiplier) * (decimal)_beatDuration;
-                    edges[i] = new SliderEdge
+                    var edges = new SliderEdge[Repeat + 1];
+
+                    for (var i = 0; i < edges.Length; i++)
                     {
-                        Offset = (double)(_offset + time * i),
-                        Point = i % 2 == 0 ? StartPoint : EndPoint,
-                        EdgeHitsound = EdgeHitsounds?[i] ?? HitsoundType.Normal,
-                        EdgeSample = EdgeSamples?[i] ?? ObjectSamplesetType.Auto,
-                        EdgeAddition = EdgeAdditions?[i] ?? ObjectSamplesetType.Auto
-                    };
+                        edges[i] = new SliderEdge
+                        {
+                            Offset = _offset + _singleElapsedTime * i,
+                            Point = i % 2 == 0 ? StartPoint : EndPoint,
+                            EdgeHitsound = EdgeHitsounds?[i] ?? HitsoundType.Normal,
+                            EdgeSample = EdgeSamples?[i] ?? ObjectSamplesetType.Auto,
+                            EdgeAddition = EdgeAdditions?[i] ?? ObjectSamplesetType.Auto
+                        };
+                    }
+
+                    _edges = edges;
                 }
 
-                return edges;
+                return _edges;
             }
         }
+
+        public SliderTick[] Ticks
+        {
+            get
+            {
+                if (_ticks == null)
+                {
+                    var tickInterval = _beatDuration / _tickRate;
+
+                    SliderTick[] ticks;
+                    switch (SliderType)
+                    {
+                        case SliderType.Bezier:
+                        case SliderType.Linear:
+                            ticks = GetBezierDiscreteBallData(tickInterval);
+                            break;
+                        case SliderType.Perfect:
+                            ticks = GetPerfectDiscreteBallData(tickInterval);
+                            break;
+                        default:
+                            ticks = Array.Empty<SliderTick>();
+                            break;
+                    }
+                    _ticks = ticks.ToArray();
+                }
+
+                return _ticks;
+            }
+        }
+
+        public SliderTick[] BallTrail
+        {
+            get
+            {
+                if (_ballTrail == null)
+                {
+                    // 60fps
+                    var interval = 1000 / 60d;
+                    SliderTick[] ticks;
+                    switch (SliderType)
+                    {
+                        case SliderType.Bezier:
+                        case SliderType.Linear:
+                            ticks = GetBezierDiscreteBallData(interval);
+                            break;
+                        case SliderType.Perfect:
+                            ticks = GetPerfectDiscreteBallData(interval);
+                            break;
+                        default:
+                            ticks = Array.Empty<SliderTick>();
+                            break;
+                    }
+                    _ballTrail = ticks.ToArray();
+                }
+
+                return _ballTrail;
+            }
+        }
+
+        private (int index, double lenInPart) CalculateWhichPart(double relativeLen)
+        {
+            double sum = 0;
+            for (var i = 0; i < RawBezierLengthData.Count; i++)
+            {
+                var len = RawBezierLengthData[i];
+                sum += len;
+                if (relativeLen < sum) return (i, len - (sum - relativeLen));
+            }
+
+            return (-1, -1);
+        }
+
+        // todo: not cut by rhythm
+        // todo: i forget math
+        private SliderTick[] GetPerfectDiscreteBallData(double interval)
+        {
+            if (Math.Round(interval - _singleElapsedTime) >= 0)
+            {
+                return Array.Empty<SliderTick>();
+            }
+
+            var p1 = StartPoint;
+            var p2 = CurvePoints[0];
+            var p3 = CurvePoints[1];
+
+            var circle = GetCircle(p1, p2, p3);
+
+            var radStart = Math.Atan2(p1.Y - circle.p.Y, p1.X - circle.p.X);
+            var radMid = Math.Atan2(p2.Y - circle.p.Y, p2.X - circle.p.X);
+            var radEnd = Math.Atan2(p3.Y - circle.p.Y, p3.X - circle.p.X);
+            if (radMid - radStart > Math.PI)
+            {
+                radMid -= Math.PI * 2;
+            }
+            else if (radMid - radStart < -Math.PI)
+            {
+                radMid += Math.PI * 2;
+            }
+
+            if (radEnd - radMid > Math.PI)
+            {
+                radEnd -= Math.PI * 2;
+            }
+            else if (radEnd - radMid < -Math.PI)
+            {
+                radEnd += Math.PI * 2;
+            }
+
+            var step = (radEnd - radStart) * (interval / _singleElapsedTime);
+
+            var ticks = new List<SliderTick>();
+
+            for (int i = 1; i * interval < _singleElapsedTime; i++)
+            {
+                var offset = i * interval; // 当前tick的相对时间
+                if (Edges.Any(k => Math.Abs(k.Offset - _offset - offset) < 0.01))
+                    continue;
+                var ratio = offset / _singleElapsedTime; // 相对整个滑条的时间比例，=距离比例
+                var relativeRad = (radEnd - radStart) * ratio; // 至滑条头的距离
+                var offsetRad = radStart + relativeRad;
+                var x = circle.p.X + circle.r * Math.Cos(offsetRad);
+                var y = circle.p.Y + circle.r * Math.Sin(offsetRad);
+
+                ticks.Add(new SliderTick(_offset + offset, new Vector2((float)x, (float)y)));
+            }
+
+            return ticks.ToArray();
+            //var degStart = radStart / Math.PI * 180;
+            //var degMid = radMid / Math.PI * 180;
+            //var degEnd = radEnd / Math.PI * 180;
+            //return Array.Empty<SliderTick>();
+        }
+
+        private static (Vector2 p, double r) GetCircle(Vector2 p1, Vector2 p2, Vector2 p3)
+        {
+            var e = 2 * (p2.X - p1.X);
+            var f = 2 * (p2.Y - p1.Y);
+            var g = Math.Pow(p2.X, 2) - Math.Pow(p1.X, 2) + Math.Pow(p2.Y, 2) - Math.Pow(p1.Y, 2);
+            var a = 2 * (p3.X - p2.X);
+            var b = 2 * (p3.Y - p2.Y);
+            var c = Math.Pow(p3.X, 2) - Math.Pow(p2.X, 2) + Math.Pow(p3.Y, 2) - Math.Pow(p2.Y, 2);
+            var x = (g * b - c * f) / (e * b - a * f);
+            var y = (a * g - c * e) / (a * f - b * e);
+            var r = Math.Pow(Math.Pow(x - p1.X, 2) + Math.Pow(y - p1.Y, 2), 0.5);
+            return (new Vector2((float)x, (float)y), r);
+        }
+
+        // todo: not cut by rhythm
+        private SliderTick[] GetBezierDiscreteBallData(double interval)
+        {
+            if (Math.Round(interval - _singleElapsedTime) >= 0)
+            {
+                return Array.Empty<SliderTick>();
+            }
+
+            var totalLength = RawBezierLengthData.Sum();
+            var ticks = new List<SliderTick>();
+
+            for (int i = 1; i * interval < _singleElapsedTime; i++)
+            {
+                var offset = i * interval; // 当前tick的相对时间
+                if (Edges.Any(k => Math.Abs(k.Offset - _offset - offset) < 0.01))
+                    continue;
+
+                var ratio = offset / _singleElapsedTime; // 相对整个滑条的时间比例，=距离比例
+                var relativeLen = totalLength * ratio; // 至滑条头的距离
+
+                var (index, lenInPart) = CalculateWhichPart(relativeLen); // can be optimized
+                var len = RawBezierLengthData[index];
+                var tickPoint = Bezier.CalcPoint((float)(lenInPart / len), RawGroupedBezierData[index]);
+                ticks.Add(new SliderTick(_offset + offset, tickPoint));
+            }
+
+            if (Repeat > 1)
+            {
+                var firstSingleCopy = ticks.ToArray();
+                for (int i = 2; i <= Repeat; i++)
+                {
+                    var reverse = i % 2 == 0;
+                    if (reverse)
+                    {
+                        ticks.AddRange(firstSingleCopy.Reverse().Select(k =>
+                            new SliderTick((_singleElapsedTime - k.Offset) + (i - 1) * _singleElapsedTime,
+                                k.Point)));
+                    }
+                    else
+                    {
+                        ticks.AddRange(firstSingleCopy.Select(k =>
+                            new SliderTick(k.Offset + (i - 1) * _singleElapsedTime, k.Point)));
+                    }
+                }
+            }
+
+            return ticks.ToArray();
+        }
+
+        private List<List<Vector2>> RawGroupedBezierData => _rawBezierData ?? (_rawBezierData = GetGroupedBezier());
+
+        private List<double> RawBezierLengthData => _rawBezierLengthData ?? (_rawBezierLengthData = GetBezierLengths(RawGroupedBezierData));
+
         public override string ToString()
         {
             var sampleList = new List<(ObjectSamplesetType, ObjectSamplesetType)>();
@@ -92,14 +307,127 @@ namespace OSharp.Beatmap.Sections.HitObject
                 edgeHitsoundStr,
                 edgeSampleStr);
         }
+
+        private static List<double> GetBezierLengths(List<List<Vector2>> value)
+        {
+            var list = new List<double>();
+            foreach (var controlPoints in value)
+            {
+                var points = Bezier.GetBezierTrail(controlPoints, 0.05f);
+                double dis = 0;
+                if (points.Length <= 1)
+                {
+                }
+                else
+                {
+                    for (int j = 0; j < points.Length - 1; j++)
+                    {
+                        dis += Math.Pow(
+                            Math.Pow(points[j].X - points[j + 1].X, 2) +
+                            Math.Pow(points[j].Y - points[j + 1].Y, 2),
+                            0.5);
+                    }
+                }
+
+                list.Add(dis);
+            }
+
+            return list;
+        }
+
+        private List<List<Vector2>> GetGroupedBezier()
+        {
+            var copiedCurvePoints = CurvePoints.ToList();
+            copiedCurvePoints.Insert(0, StartPoint);
+
+            var list = new List<List<Vector2>>();
+            var current = new List<Vector2>();
+            list.Add(current);
+            for (int i = 0; i < copiedCurvePoints.Count; i++)
+            {
+                var @this = copiedCurvePoints[i];
+                current.Add(@this);
+                if (i == copiedCurvePoints.Count - 1)
+                {
+                    break;
+                }
+
+                var next = copiedCurvePoints[i + 1];
+
+                if (Math.Abs(@this.X - next.X) < 0.01 && Math.Abs(@this.Y - next.Y) < 0.01)
+                {
+                    current = new List<Vector2>();
+                    list.Add(current);
+                }
+            }
+
+            return list;
+        }
+    }
+
+    public class ReversableList<T>
+    {
+        private (int index, T element)? _current;
+        private readonly List<T> _list;
+        //private readonly bool _initialReverse;
+        private bool _currentReverse = false;
+        public ReversableList(List<T> list/*, bool initialReverse = false*/)
+        {
+            _list = list;
+            //_initialReverse = initialReverse;
+        }
+
+        public (int index, T element) GetNext()
+        {
+            if (_current == null)
+            {
+                _current = (0, _list[0]);
+                _currentReverse = false;
+
+                return _current.Value;
+            }
+            else
+            {
+                if (!_currentReverse && _current.Value.index == _list.Count - 1)
+                {
+                    _currentReverse = false;
+                    var index = _list.Count - 1;
+                    _current = (index, _list[index]);
+                }
+                else if (_currentReverse && _current.Value.index == 0)
+                {
+                    _currentReverse = true;
+                    _current = (0, _list[0]);
+                }
+                else
+                {
+                    var index = _currentReverse ? _current.Value.index - 1 : _current.Value.index + 1;
+                    _current = (index, _list[index]);
+                }
+
+                return _current.Value;
+            }
+        }
     }
 
     public struct SliderEdge
     {
         public double Offset { get; set; }
-        public Point Point { get; set; }
+        public Vector2 Point { get; set; }
         public HitsoundType EdgeHitsound { get; set; }
         public ObjectSamplesetType EdgeSample { get; set; }
         public ObjectSamplesetType EdgeAddition { get; set; }
+    }
+
+    public struct SliderTick
+    {
+        public SliderTick(double offset, Vector2 point)
+        {
+            Offset = offset;
+            Point = point;
+        }
+
+        public double Offset { get; set; }
+        public Vector2 Point { get; set; }
     }
 }
