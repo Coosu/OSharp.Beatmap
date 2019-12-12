@@ -177,10 +177,29 @@ namespace OSharp.Beatmap.Sections.HitObject
                 radEnd += Math.PI * 2;
             }
 
-            var degStart = radStart / Math.PI * 180;
-            var degMid = radMid / Math.PI * 180;
-            var degEnd = radEnd / Math.PI * 180;
-            return Array.Empty<SliderTick>();
+            var step = (radEnd - radStart) * (interval / _singleElapsedTime);
+
+            var ticks = new List<SliderTick>();
+
+            for (int i = 1; i * interval < _singleElapsedTime; i++)
+            {
+                var offset = i * interval; // 当前tick的相对时间
+                if (Edges.Any(k => Math.Abs(k.Offset - _offset - offset) < 0.01))
+                    continue;
+                var ratio = offset / _singleElapsedTime; // 相对整个滑条的时间比例，=距离比例
+                var relativeRad = (radEnd - radStart) * ratio; // 至滑条头的距离
+                var offsetRad = radStart + relativeRad;
+                var x = circle.p.X + circle.r * Math.Cos(offsetRad);
+                var y = circle.p.Y + circle.r * Math.Sin(offsetRad);
+
+                ticks.Add(new SliderTick(_offset + offset, new Vector2((float)x, (float)y)));
+            }
+
+            return ticks.ToArray();
+            //var degStart = radStart / Math.PI * 180;
+            //var degMid = radMid / Math.PI * 180;
+            //var degEnd = radEnd / Math.PI * 180;
+            //return Array.Empty<SliderTick>();
         }
 
         private static (Vector2 p, double r) GetCircle(Vector2 p1, Vector2 p2, Vector2 p3)
