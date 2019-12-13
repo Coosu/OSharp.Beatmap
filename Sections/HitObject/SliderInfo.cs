@@ -269,7 +269,7 @@ namespace OSharp.Beatmap.Sections.HitObject
                     if (reverse)
                     {
                         ticks.AddRange(firstSingleCopy.Reverse().Select(k =>
-                            new SliderTick((_singleElapsedTime - k.Offset) + (i - 1) * _singleElapsedTime,
+                            new SliderTick((_singleElapsedTime - (k.Offset - _offset)) + (i - 1) * _singleElapsedTime + _offset,
                                 k.Point)));
                     }
                     else
