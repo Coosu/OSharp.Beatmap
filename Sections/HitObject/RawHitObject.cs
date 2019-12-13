@@ -67,7 +67,7 @@ namespace OSharp.Beatmap.Sections.HitObject
         {
             get
             {
-                if (_extraInitial) InitialExtra();
+                if (!_extraInitial) InitialExtra();
                 return _sampleSet;
             }
             set => _sampleSet = value;
@@ -77,7 +77,7 @@ namespace OSharp.Beatmap.Sections.HitObject
         {
             get
             {
-                if (_extraInitial) InitialExtra();
+                if (!_extraInitial) InitialExtra();
                 return _additionSet;
             }
             set => _additionSet = value;
@@ -87,7 +87,7 @@ namespace OSharp.Beatmap.Sections.HitObject
         {
             get
             {
-                if (_extraInitial) InitialExtra();
+                if (!_extraInitial) InitialExtra();
                 return _customIndex;
             }
             set => _customIndex = value;
@@ -97,7 +97,7 @@ namespace OSharp.Beatmap.Sections.HitObject
         {
             get
             {
-                if (_extraInitial) InitialExtra();
+                if (!_extraInitial) InitialExtra();
                 return _sampleVolume;
             }
             set => _sampleVolume = value;
@@ -107,7 +107,7 @@ namespace OSharp.Beatmap.Sections.HitObject
         {
             get
             {
-                if (_extraInitial) InitialExtra();
+                if (!_extraInitial) InitialExtra();
                 return _fileName;
             }
             set => _fileName = value;
