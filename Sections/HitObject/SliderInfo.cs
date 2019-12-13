@@ -177,8 +177,6 @@ namespace OSharp.Beatmap.Sections.HitObject
                 radEnd += Math.PI * 2;
             }
 
-            var step = (radEnd - radStart) * (interval / _singleElapsedTime);
-
             var ticks = new List<SliderTick>();
 
             for (int i = 1; i * interval < _singleElapsedTime; i++)
@@ -195,6 +193,26 @@ namespace OSharp.Beatmap.Sections.HitObject
                 ticks.Add(new SliderTick(_offset + offset, new Vector2((float)x, (float)y)));
             }
 
+            if (Repeat > 1)
+            {
+                var firstSingleCopy = ticks.ToArray();
+                for (int i = 2; i <= Repeat; i++)
+                {
+                    var reverse = i % 2 == 0;
+                    if (reverse)
+                    {
+                        ticks.AddRange(firstSingleCopy.Reverse().Select(k =>
+                            new SliderTick((_singleElapsedTime - (k.Offset - _offset)) + (i - 1) * _singleElapsedTime + _offset,
+                                k.Point)));
+                    }
+                    else
+                    {
+                        ticks.AddRange(firstSingleCopy.Select(k =>
+                            new SliderTick(k.Offset + (i - 1) * _singleElapsedTime, k.Point)));
+                    }
+                }
+            }
+            
             return ticks.ToArray();
             //var degStart = radStart / Math.PI * 180;
             //var degMid = radMid / Math.PI * 180;
