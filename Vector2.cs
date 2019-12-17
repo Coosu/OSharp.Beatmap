@@ -1,18 +1,19 @@
 ﻿namespace OSharp.Beatmap
 {
-    public struct Vector2
+    public struct Vector2<T>
     {
-        public Vector2(float x, float y) : this()
+        public Vector2(T x, T y) : this()
         {
             X = x;
             Y = y;
         }
 
-        public float X { get; set; }
-        public float Y { get; set; }
+        public T X { get; set; }
+        public T Y { get; set; }
+
         public override string ToString()
         {
-            return X + "," + Y;
+            return $"{X},{Y}";
         }
     }
 }

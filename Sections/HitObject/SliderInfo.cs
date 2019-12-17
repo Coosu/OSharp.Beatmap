@@ -9,7 +9,7 @@ namespace OSharp.Beatmap.Sections.HitObject
     public class SliderInfo
     {
         public SliderType SliderType { get; set; }
-        public Vector2[] CurvePoints { get; set; }
+        public Vector2<float>[] CurvePoints { get; set; }
         public int Repeat { get; set; }
         public decimal PixelLength { get; set; }
         public HitsoundType[] EdgeHitsounds { get; set; }
@@ -17,14 +17,17 @@ namespace OSharp.Beatmap.Sections.HitObject
         public ObjectSamplesetType[] EdgeAdditions { get; set; }
 
         //extension
-        public Vector2 StartPoint { get; }
-        public Vector2 EndPoint => CurvePoints.Last();
+        public Vector2<float> StartPoint { get; }
+        public Vector2<float> EndPoint => CurvePoints.Last();
+
+        public double StartTime => _offset;
+        public double EndTime => Edges[Edges.Length - 1].Offset;
 
         private double _singleElapsedTime;
         private SliderEdge[] _edges;
         private SliderTick[] _ticks;
         private SliderTick[] _ballTrail;
-        private List<List<Vector2>> _rawBezierData;
+        private List<List<Vector2<float>>> _rawBezierData;
         private List<double> _rawBezierLengthData;
 
         private readonly int _offset;
@@ -32,7 +35,7 @@ namespace OSharp.Beatmap.Sections.HitObject
         private readonly double _sliderMultiplier;
         private readonly double _tickRate;
 
-        public SliderInfo(Vector2 startPoint, int offset, double beatDuration, double sliderMultiplier, double tickRate, decimal pixelLength)
+        public SliderInfo(Vector2<float> startPoint, int offset, double beatDuration, double sliderMultiplier, double tickRate, decimal pixelLength)
         {
             StartPoint = startPoint;
             PixelLength = pixelLength;
@@ -77,22 +80,7 @@ namespace OSharp.Beatmap.Sections.HitObject
                 if (_ticks == null)
                 {
                     var tickInterval = _beatDuration / _tickRate;
-
-                    SliderTick[] ticks;
-                    switch (SliderType)
-                    {
-                        case SliderType.Bezier:
-                        case SliderType.Linear:
-                            ticks = GetBezierDiscreteBallData(tickInterval);
-                            break;
-                        case SliderType.Perfect:
-                            ticks = GetPerfectDiscreteBallData(tickInterval);
-                            break;
-                        default:
-                            ticks = Array.Empty<SliderTick>();
-                            break;
-                    }
-                    _ticks = ticks.ToArray();
+                    _ballTrail = GetDiscreteSliderTrailData(tickInterval);
                 }
 
                 return _ticks;
@@ -107,25 +95,30 @@ namespace OSharp.Beatmap.Sections.HitObject
                 {
                     // 60fps
                     var interval = 1000 / 60d;
-                    SliderTick[] ticks;
-                    switch (SliderType)
-                    {
-                        case SliderType.Bezier:
-                        case SliderType.Linear:
-                            ticks = GetBezierDiscreteBallData(interval);
-                            break;
-                        case SliderType.Perfect:
-                            ticks = GetPerfectDiscreteBallData(interval);
-                            break;
-                        default:
-                            ticks = Array.Empty<SliderTick>();
-                            break;
-                    }
-                    _ballTrail = ticks.ToArray();
+                    _ballTrail = GetDiscreteSliderTrailData(interval);
                 }
 
                 return _ballTrail;
             }
+        }
+
+        public SliderTick[] GetDiscreteSliderTrailData(double intervalMilliseconds)
+        {
+            SliderTick[] ticks;
+            switch (SliderType)
+            {
+                case SliderType.Bezier:
+                case SliderType.Linear:
+                    ticks = GetBezierDiscreteBallData(intervalMilliseconds);
+                    break;
+                case SliderType.Perfect:
+                    ticks = GetPerfectDiscreteBallData(intervalMilliseconds);
+                    break;
+                default:
+                    ticks = Array.Empty<SliderTick>();
+                    break;
+            }
+            return ticks.ToArray();
         }
 
         private (int index, double lenInPart) CalculateWhichPart(double relativeLen)
@@ -190,7 +183,7 @@ namespace OSharp.Beatmap.Sections.HitObject
                 var x = circle.p.X + circle.r * Math.Cos(offsetRad);
                 var y = circle.p.Y + circle.r * Math.Sin(offsetRad);
 
-                ticks.Add(new SliderTick(_offset + offset, new Vector2((float)x, (float)y)));
+                ticks.Add(new SliderTick(_offset + offset, new Vector2<float>((float)x, (float)y)));
             }
 
             if (Repeat > 1)
@@ -212,7 +205,7 @@ namespace OSharp.Beatmap.Sections.HitObject
                     }
                 }
             }
-            
+
             return ticks.ToArray();
             //var degStart = radStart / Math.PI * 180;
             //var degMid = radMid / Math.PI * 180;
@@ -220,7 +213,7 @@ namespace OSharp.Beatmap.Sections.HitObject
             //return Array.Empty<SliderTick>();
         }
 
-        private static (Vector2 p, double r) GetCircle(Vector2 p1, Vector2 p2, Vector2 p3)
+        private static (Vector2<float> p, double r) GetCircle(Vector2<float> p1, Vector2<float> p2, Vector2<float> p3)
         {
             var e = 2 * (p2.X - p1.X);
             var f = 2 * (p2.Y - p1.Y);
@@ -231,7 +224,7 @@ namespace OSharp.Beatmap.Sections.HitObject
             var x = (g * b - c * f) / (e * b - a * f);
             var y = (a * g - c * e) / (a * f - b * e);
             var r = Math.Pow(Math.Pow(x - p1.X, 2) + Math.Pow(y - p1.Y, 2), 0.5);
-            return (new Vector2((float)x, (float)y), r);
+            return (new Vector2<float>((float)x, (float)y), r);
         }
 
         // todo: not cut by rhythm
@@ -283,7 +276,7 @@ namespace OSharp.Beatmap.Sections.HitObject
             return ticks.ToArray();
         }
 
-        private List<List<Vector2>> RawGroupedBezierData => _rawBezierData ?? (_rawBezierData = GetGroupedBezier());
+        private List<List<Vector2<float>>> RawGroupedBezierData => _rawBezierData ?? (_rawBezierData = GetGroupedBezier());
 
         private List<double> RawBezierLengthData => _rawBezierLengthData ?? (_rawBezierLengthData = GetBezierLengths(RawGroupedBezierData));
 
@@ -326,7 +319,7 @@ namespace OSharp.Beatmap.Sections.HitObject
                 edgeSampleStr);
         }
 
-        private static List<double> GetBezierLengths(List<List<Vector2>> value)
+        private static List<double> GetBezierLengths(List<List<Vector2<float>>> value)
         {
             var list = new List<double>();
             foreach (var controlPoints in value)
@@ -353,13 +346,13 @@ namespace OSharp.Beatmap.Sections.HitObject
             return list;
         }
 
-        private List<List<Vector2>> GetGroupedBezier()
+        private List<List<Vector2<float>>> GetGroupedBezier()
         {
             var copiedCurvePoints = CurvePoints.ToList();
             copiedCurvePoints.Insert(0, StartPoint);
 
-            var list = new List<List<Vector2>>();
-            var current = new List<Vector2>();
+            var list = new List<List<Vector2<float>>>();
+            var current = new List<Vector2<float>>();
             list.Add(current);
             for (int i = 0; i < copiedCurvePoints.Count; i++)
             {
@@ -374,7 +367,7 @@ namespace OSharp.Beatmap.Sections.HitObject
 
                 if (Math.Abs(@this.X - next.X) < 0.01 && Math.Abs(@this.Y - next.Y) < 0.01)
                 {
-                    current = new List<Vector2>();
+                    current = new List<Vector2<float>>();
                     list.Add(current);
                 }
             }
@@ -431,7 +424,7 @@ namespace OSharp.Beatmap.Sections.HitObject
     public struct SliderEdge
     {
         public double Offset { get; set; }
-        public Vector2 Point { get; set; }
+        public Vector2<float> Point { get; set; }
         public HitsoundType EdgeHitsound { get; set; }
         public ObjectSamplesetType EdgeSample { get; set; }
         public ObjectSamplesetType EdgeAddition { get; set; }
@@ -439,13 +432,13 @@ namespace OSharp.Beatmap.Sections.HitObject
 
     public struct SliderTick
     {
-        public SliderTick(double offset, Vector2 point)
+        public SliderTick(double offset, Vector2<float> point)
         {
             Offset = offset;
             Point = point;
         }
 
         public double Offset { get; set; }
-        public Vector2 Point { get; set; }
+        public Vector2<float> Point { get; set; }
     }
 }

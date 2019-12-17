@@ -12,13 +12,13 @@ namespace OSharp.Beatmap
         /// <param name="points">输入点</param>
         /// <param name="step">步长,步长越小，轨迹点越密集</param>
         /// <returns></returns>
-        public static Vector2[] GetBezierTrail(IReadOnlyList<Vector2> points, float step)
+        public static Vector2<float>[] GetBezierTrail(IReadOnlyList<Vector2<float>> points, float step)
         {
-            var curvePoints = new List<Vector2>();
+            var curvePoints = new List<Vector2<float>>();
             float t = 0F;
             do
             {
-                Vector2 result = CalcPoint(t, points);    // 计算插值点
+                Vector2<float> result = CalcPoint(t, points);    // 计算插值点
                 t += step;
                 curvePoints.Add(result);
             }
@@ -34,7 +34,7 @@ namespace OSharp.Beatmap
         /// <param name="ratio">当前插值位置0~1 ，0为起点，1为终点</param>
         /// <param name="points">起点，n-1个控制点，终点</param>
         /// <returns></returns>
-        public static Vector2 CalcPoint(float ratio, IReadOnlyList<Vector2> points)
+        public static Vector2<float> CalcPoint(float ratio, IReadOnlyList<Vector2<float>> points)
         {
             float sumX = 0, sumY = 0;
             var count = points.Count;
@@ -46,7 +46,7 @@ namespace OSharp.Beatmap
                 sumY += (float)(combination * points[i].Y * Math.Pow(1 - ratio, order - i) * Math.Pow(ratio, i));
             }
 
-            var vector2 = new Vector2(sumX, sumY);
+            var vector2 = new Vector2<float>(sumX, sumY);
             return vector2;
         }
 

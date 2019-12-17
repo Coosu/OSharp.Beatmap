@@ -1,5 +1,4 @@
 ﻿using OSharp.Beatmap.Configurable;
-using System.Drawing;
 
 namespace OSharp.Beatmap.Sections
 {
@@ -7,28 +6,28 @@ namespace OSharp.Beatmap.Sections
     public class ColorSection : KeyValueSection
     {
         [SectionConverter(typeof(ColorConverter))]
-        public Color? Combo1 { get; set; }
+        public Vector3<byte>? Combo1 { get; set; }
 
         [SectionConverter(typeof(ColorConverter))]
-        public Color? Combo2 { get; set; }
+        public Vector3<byte>? Combo2 { get; set; }
 
         [SectionConverter(typeof(ColorConverter))]
-        public Color? Combo3 { get; set; }
+        public Vector3<byte>? Combo3 { get; set; }
 
         [SectionConverter(typeof(ColorConverter))]
-        public Color? Combo4 { get; set; }
+        public Vector3<byte>? Combo4 { get; set; }
 
         [SectionConverter(typeof(ColorConverter))]
-        public Color? Combo5 { get; set; }
+        public Vector3<byte>? Combo5 { get; set; }
 
         [SectionConverter(typeof(ColorConverter))]
-        public Color? Combo6 { get; set; }
+        public Vector3<byte>? Combo6 { get; set; }
 
         [SectionConverter(typeof(ColorConverter))]
-        public Color? Combo7 { get; set; }
+        public Vector3<byte>? Combo7 { get; set; }
 
         [SectionConverter(typeof(ColorConverter))]
-        public Color? Combo8 { get; set; }
+        public Vector3<byte>? Combo8 { get; set; }
 
         protected override string KeyValueFlag => " : ";
     }

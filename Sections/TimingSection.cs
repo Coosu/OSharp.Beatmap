@@ -15,6 +15,8 @@ namespace OSharp.Beatmap.Sections
         public double MinTime => TimingList.Count == 0 ? 0 : TimingList.Min(t => t.Offset);
         public double MaxTime => TimingList.Count == 0 ? 0 : TimingList.Max(t => t.Offset);
 
+        public TimingPoint this[int index] => TimingList[index];
+
         public override void Match(string line)
         {
             if (TimingList == null)

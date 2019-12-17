@@ -1,16 +1,21 @@
 ﻿namespace OSharp.Beatmap
 {
-    public struct Vector3
+    public struct Vector3<T>
     {
-        public Vector3(float x, float y, float z) : this()
+        public Vector3(T x, T y, T z) : this()
         {
             X = x;
             Y = y;
             Z = z;
         }
 
-        public float X { get; }
-        public float Y { get; }
-        public float Z { get; }
+        public T X { get; }
+        public T Y { get; }
+        public T Z { get; }
+
+        public override string ToString()
+        {
+            return $"{X},{Y},{Z}";
+        }
     }
 }

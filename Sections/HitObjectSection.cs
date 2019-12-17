@@ -28,6 +28,8 @@ namespace OSharp.Beatmap.Sections
             _general = osuFile.General;
         }
 
+        public RawHitObject this[int index] => HitObjectList[index];
+
         public override void Match(string line)
         {
             string[] param = line.SpanSplit(",");
@@ -88,12 +90,12 @@ namespace OSharp.Beatmap.Sections
             var curveInfo = infos[0].SpanSplit("|");
             var sliderType = infos[0].Split('|')[0];
 
-            var points = new Vector2[curveInfo.Length - 1]; // curvePoints skip 1
+            var points = new Vector2<float>[curveInfo.Length - 1]; // curvePoints skip 1
             for (var i = 1; i < curveInfo.Length; i++)
             {
                 var point = curveInfo[i];
                 var xy = point.SpanSplit(":");
-                points[i - 1] = new Vector2(int.Parse(xy[0]), int.Parse(xy[1]));
+                points[i - 1] = new Vector2<float>(int.Parse(xy[0]), int.Parse(xy[1]));
             }
 
             // repeat
@@ -180,7 +182,7 @@ namespace OSharp.Beatmap.Sections
             }
             else lastLine = lastLines[0];
 
-            hitObject.SliderInfo = new SliderInfo(new Vector2(hitObject.X, hitObject.Y),
+            hitObject.SliderInfo = new SliderInfo(new Vector2<float>(hitObject.X, hitObject.Y),
                 hitObject.Offset,
                 lastRedLine.Factor,
                 _difficulty.SliderMultiplier * lastLine.Multiple,
