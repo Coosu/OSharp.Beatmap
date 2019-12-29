@@ -67,6 +67,97 @@ namespace OSharp.Beatmap
             }
         }
 
+        public static async Task<bool> OsbFileHasStoryboard(string osbPath)
+        {
+            using (var sr = new StreamReader(osbPath))
+            {
+                var line = await sr.ReadLineAsync();
+
+                bool inSbSection = false;
+                bool hasInSbSection = false;
+
+                while (!sr.EndOfStream)
+                {
+                    if (line.StartsWith("//"))
+                    {
+                        if (line.StartsWith("//Storyboard Layer"))
+                        {
+                            inSbSection = true;
+                            hasInSbSection = true;
+                        }
+                        else if (hasInSbSection)
+                        {
+                            break;
+                        }
+                    }
+                    else if (inSbSection)
+                    {
+                        if (!string.IsNullOrWhiteSpace(line))
+                            return true;
+                    }
+
+                    line = await sr.ReadLineAsync();
+                }
+
+                return false;
+            }
+        }
+
+        public static async Task<bool> FileHasStoryboard(string mapPath)
+        {
+            using (var sr = new StreamReader(mapPath))
+            {
+                var line = await sr.ReadLineAsync();
+                bool hasEvent = false;
+                bool inEventsSection = false;
+                bool inSbSection = false;
+                bool hasInSbSection = false;
+
+                while (!sr.EndOfStream)
+                {
+                    if (line == null) break;
+
+                    if (line.StartsWith("[") && line.EndsWith("]"))
+                    {
+                        if (line == "[Events]")
+                        {
+                            inEventsSection = true;
+                            hasEvent = true;
+
+                        }
+                        else if (hasEvent)
+                        {
+                            break;
+                        }
+                    }
+                    else if (inEventsSection)
+                    {
+                        if (line.StartsWith("//"))
+                        {
+                            if (line.StartsWith("//Storyboard Layer"))
+                            {
+                                inSbSection = true;
+                                hasInSbSection = true;
+                            }
+                            else if (hasInSbSection)
+                            {
+                                break;
+                            }
+                        }
+                        else if (inSbSection)
+                        {
+                            if (!string.IsNullOrWhiteSpace(line))
+                                return true;
+                        }
+                    }
+
+                    line = await sr.ReadLineAsync();
+                }
+            }
+
+            return false;
+        }
+
         private OsuFile() { }
 
         private string Path => Common.IO.File.EscapeFileName(string.Format("{0} - {1} ({2}){3}.osu",
