@@ -80,7 +80,7 @@ namespace OSharp.Beatmap.Sections.HitObject
                 if (_ticks == null)
                 {
                     var tickInterval = _beatDuration / _tickRate;
-                    _ballTrail = GetDiscreteSliderTrailData(tickInterval);
+                    _ticks = GetDiscreteSliderTrailData(tickInterval);
                 }
 
                 return _ticks;
