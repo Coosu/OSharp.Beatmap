@@ -8,8 +8,9 @@ namespace OSharp.Beatmap.Sections.HitObject
 {
     public class RawHitObject : SerializeWritableObject
     {
-        private string _extras;
+        private string _extras = "0:0:0:0:";
         private bool _extraInitial;
+        private bool _extraAnyUpdated;
         private ObjectSamplesetType _sampleSet;
         private ObjectSamplesetType _additionSet;
         private int _customIndex;
@@ -70,7 +71,11 @@ namespace OSharp.Beatmap.Sections.HitObject
                 if (!_extraInitial) InitialExtra();
                 return _sampleSet;
             }
-            set => _sampleSet = value;
+            set
+            {
+                _sampleSet = value;
+                _extraAnyUpdated = true;
+            }
         }
 
         public ObjectSamplesetType AdditionSet
@@ -80,7 +85,11 @@ namespace OSharp.Beatmap.Sections.HitObject
                 if (!_extraInitial) InitialExtra();
                 return _additionSet;
             }
-            set => _additionSet = value;
+            set
+            {
+                _additionSet = value;
+                _extraAnyUpdated = true;
+            }
         }
 
         public int CustomIndex
@@ -90,7 +99,11 @@ namespace OSharp.Beatmap.Sections.HitObject
                 if (!_extraInitial) InitialExtra();
                 return _customIndex;
             }
-            set => _customIndex = value;
+            set
+            {
+                _customIndex = value;
+                _extraAnyUpdated = true;
+            }
         }
 
         public int SampleVolume
@@ -100,7 +113,11 @@ namespace OSharp.Beatmap.Sections.HitObject
                 if (!_extraInitial) InitialExtra();
                 return _sampleVolume;
             }
-            set => _sampleVolume = value;
+            set
+            {
+                _sampleVolume = value;
+                _extraAnyUpdated = true;
+            }
         }
 
         public string FileName
@@ -110,7 +127,11 @@ namespace OSharp.Beatmap.Sections.HitObject
                 if (!_extraInitial) InitialExtra();
                 return _fileName;
             }
-            set => _fileName = value;
+            set
+            {
+                _fileName = value;
+                _extraAnyUpdated = true;
+            }
         }
 
         private void InitialExtra()
@@ -118,11 +139,11 @@ namespace OSharp.Beatmap.Sections.HitObject
             if (!string.IsNullOrWhiteSpace(Extras))
             {
                 var arr = Extras.Split(new[] { ':' }, StringSplitOptions.RemoveEmptyEntries);
-                if (arr.Length > 0) SampleSet = arr[0].ParseToEnum<ObjectSamplesetType>();
-                if (arr.Length > 1) AdditionSet = arr[1].ParseToEnum<ObjectSamplesetType>();
-                if (arr.Length > 2) CustomIndex = int.Parse(arr[2]);
-                if (arr.Length > 3) SampleVolume = int.Parse(arr[3]);
-                if (arr.Length > 4) FileName = arr[4];
+                if (arr.Length > 0) _sampleSet = arr[0].ParseToEnum<ObjectSamplesetType>();
+                if (arr.Length > 1) _additionSet = arr[1].ParseToEnum<ObjectSamplesetType>();
+                if (arr.Length > 2) _customIndex = int.Parse(arr[2]);
+                if (arr.Length > 3) _sampleVolume = int.Parse(arr[3]);
+                if (arr.Length > 4) _fileName = arr[4];
             }
 
             _extraInitial = true;
@@ -132,6 +153,7 @@ namespace OSharp.Beatmap.Sections.HitObject
 
         public override string ToString()
         {
+            if (_extraAnyUpdated) Extras = $"{(int)_sampleSet}:{(int)_additionSet}:{_customIndex}:{_sampleVolume}:{_fileName}";
             switch (ObjectType)
             {
                 case HitObjectType.Circle:

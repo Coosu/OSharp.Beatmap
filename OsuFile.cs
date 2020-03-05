@@ -1,10 +1,13 @@
 ﻿using OSharp.Beatmap.Configurable;
 using OSharp.Beatmap.Sections;
 using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Reflection;
 using System.Threading.Tasks;
+using OSharp.Beatmap.Sections.Event;
+using OSharp.Beatmap.Sections.Timing;
 
 namespace OSharp.Beatmap
 {
@@ -158,6 +161,25 @@ namespace OSharp.Beatmap
             return false;
         }
 
+        public static OsuFile CreateEmpty()
+        {
+            var emptyFile = new OsuFile
+            {
+                Version = 14,
+                General = new GeneralSection(),
+                Colours = new ColorSection(),
+                Difficulty = new DifficultySection(),
+                Editor = new EditorSection(),
+                Metadata = new MetadataSection(),
+                TimingPoints = new TimingSection()
+            };
+            emptyFile.Events = new EventSection(emptyFile);
+            emptyFile.HitObjects = new HitObjectSection(emptyFile);
+            emptyFile.TimingPoints.TimingList = new List<TimingPoint>();
+            emptyFile.Events.SampleInfo = new List<StoryboardSampleData>();
+            return emptyFile;
+        }
+
         private OsuFile() { }
 
         private string Path => Common.IO.File.EscapeFileName(string.Format("{0} - {1} ({2}){3}.osu",
@@ -174,6 +196,5 @@ namespace OSharp.Beatmap
                 Metadata.Creator,
                 Metadata.Version != "" ? $" [{newDiffName}]" : ""));
         }
-
     }
 }
