@@ -20,7 +20,7 @@ namespace OSharp.Beatmap
 
         public MetaString(string origin, string unicode, bool preferUnicode)
         {
-            Origin = new string(origin.Where(k => k <= 126 || k >= 32).ToArray());
+            Origin = origin == null ? null : new string(origin.Where(k => k <= 126 || k >= 32).ToArray());
             Unicode = unicode;
             _preferUnicode = preferUnicode;
         }
