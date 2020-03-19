@@ -143,9 +143,20 @@ namespace OSharp.Beatmap.Sections.HitObject
                 return Array.Empty<SliderTick>();
             }
 
-            var p1 = StartPoint;
-            var p2 = CurvePoints[0];
-            var p3 = CurvePoints[1];
+            Vector2<float> p1;
+            Vector2<float> p2;
+            Vector2<float> p3;
+            try
+            {
+                p1 = StartPoint;
+                p2 = CurvePoints[0];
+                p3 = CurvePoints[1];
+            }
+            catch (IndexOutOfRangeException)
+            {
+                this.SliderType = SliderType.Linear;
+                return GetBezierDiscreteBallData(interval);
+            }
 
             var circle = GetCircle(p1, p2, p3);
 
