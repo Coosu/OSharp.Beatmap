@@ -5,5 +5,7 @@
         string Version { get; }
         string FolderName { get; }
         bool InOwnDb { get; }
+
+        MapIdentity GetIdentity();
     }
 }
