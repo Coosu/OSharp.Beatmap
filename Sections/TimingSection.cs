@@ -23,17 +23,28 @@ namespace OSharp.Beatmap.Sections
                 TimingList = new List<TimingPoint>();
 
             string[] param = line.Split(',');
+            double offset = double.Parse(param[0]);
+            double factor = double.Parse(param[1]);
+            int rhythm = int.Parse(param[2]);
+            var timingSampleset = param.Length > 3
+                ? (TimingSamplesetType)(int.Parse(param[3]) - 1)
+                : TimingSamplesetType.None;
+            var track = param.Length > 4 ? int.Parse(param[4]) : 0;
+            var volume = param.Length > 5 ? int.Parse(param[5]) : 0;
+            var inherit = param.Length > 6 && !Convert.ToBoolean(int.Parse(param[6]));
+            var kiai = param.Length > 7 && Convert.ToBoolean(int.Parse(param[7]));
+            var positive = factor >= 0;
             TimingList.Add(new TimingPoint
             {
-                Offset = double.Parse(param[0]),
-                Factor = double.Parse(param[1]),
-                Rhythm = int.Parse(param[2]),
-                TimingSampleset = (TimingSamplesetType)(int.Parse(param[3]) - 1),
-                Track = int.Parse(param[4]),
-                Volume = int.Parse(param[5]),
-                Inherit = param.Length > 6 && !Convert.ToBoolean(int.Parse(param[6])),
-                Kiai = param.Length > 7 && Convert.ToBoolean(int.Parse(param[7])),
-                Positive = double.Parse(param[1]) >= 0
+                Offset = offset,
+                Factor = factor,
+                Rhythm = rhythm,
+                TimingSampleset = timingSampleset,
+                Track = track,
+                Volume = volume,
+                Inherit = inherit,
+                Kiai = kiai,
+                Positive = positive
             });
         }
 
