@@ -34,7 +34,7 @@ namespace OSharp.Beatmap
         {
             return await Task.Run(() =>
             {
-                var targetPath = path.StartsWith(@"\\?\") ? path : @"\\?\" + path;
+                var targetPath = (path?.StartsWith(@"\\?\") == true) ? path : @"\\?\" + path;
                 try
                 {
                     using (var sr = new StreamReader(targetPath))
