@@ -27,5 +27,16 @@
         }
 
         public override int GetHashCode() => base.GetHashCode();
+
+        public override string ToString()
+        {
+            if (this.IsMapTemporary())
+                return $"temp: \"{FolderName}\"";
+
+            if (InOwnDb)
+                return $"own: [\"{FolderName}\",\"{Version}\"]";
+
+            return $"osu: [\"{FolderName}\",\"{Version}\"]";
+        }
     }
 }
