@@ -11,6 +11,13 @@ using OSharp.Beatmap.Sections.Timing;
 
 namespace OSharp.Beatmap
 {
+    public class LocalOsuFile : OsuFile
+    {
+        public string OriginPath { get; internal set; }
+        public bool ReadSuccess { get; set; } = true;
+        public Exception ReadException { get; set; }
+    }
+
     public class OsuFile : Config
     {
         public int Version { get; set; }
@@ -23,13 +30,23 @@ namespace OSharp.Beatmap
         public ColorSection Colours { get; set; }
         public HitObjectSection HitObjects { get; set; }
 
-        public static async Task<OsuFile> ReadFromFileAsync(string path, Action<ReadOptions> readOptionFactory = null)
+        public static async Task<LocalOsuFile> ReadFromFileAsync(string path, Action<ReadOptions> readOptionFactory = null)
         {
             return await Task.Run(() =>
             {
-                using (StreamReader sr = new StreamReader(path))
+                var targetPath = (path?.StartsWith(@"\\?\") == true) ? path : @"\\?\" + path;
+                try
                 {
-                    return ConfigConvert.DeserializeObject<OsuFile>(sr, readOptionFactory);
+                    using (var sr = new StreamReader(targetPath))
+                    {
+                        var localOsuFile = ConfigConvert.DeserializeObject<LocalOsuFile>(sr, readOptionFactory);
+                        localOsuFile.OriginPath = targetPath;
+                        return localOsuFile;
+                    }
+                }
+                catch (Exception ex)
+                {
+                    return new LocalOsuFile { ReadSuccess = false, ReadException = ex, OriginPath = targetPath };
                 }
             }).ConfigureAwait(false);
         }
@@ -180,7 +197,7 @@ namespace OSharp.Beatmap
             return emptyFile;
         }
 
-        private OsuFile() { }
+        protected OsuFile() { }
 
         private string Path => Common.IO.File.EscapeFileName(string.Format("{0} - {1} ({2}){3}.osu",
             Metadata.Artist,
