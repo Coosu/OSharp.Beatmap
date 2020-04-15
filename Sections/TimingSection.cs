@@ -97,17 +97,19 @@ namespace OSharp.Beatmap.Sections
             TimingPoint point;
             if (points.Length > 1)
             {
-                if (points.Length == 2)
-                {
-                    if (points[0].Inherit != points[1].Inherit)
-                    {
-                        point = points.First(t => t.Inherit);
-                    }
-                    else
-                        throw new RepeatTimingSectionException("存在同一时刻两条相同类型的Timing Section。");
-                }
-                else
-                    throw new RepeatTimingSectionException("存在同一时刻多条Timing Section。");
+                var greens = points.Where(k => k.Inherit);
+                point = greens.Last();
+                //if (points.Length == 2)
+                //{
+                //    if (points[0].Inherit != points[1].Inherit)
+                //    {
+                //        point = points.First(t => t.Inherit);
+                //    }
+                //    else
+                //        throw new RepeatTimingSectionException("存在同一时刻两条相同类型的Timing Section。");
+                //}
+                //else
+                //    throw new RepeatTimingSectionException("存在同一时刻多条Timing Section。");
             }
             else
                 point = points[0];
