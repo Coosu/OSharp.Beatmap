@@ -70,7 +70,8 @@ namespace OSharp.Beatmap.Sections
                 switch (_currentSection)
                 {
                     case SectionBgVideo:
-                        if (line.StartsWith("Video,"))
+                        // https://osu.ppy.sh/help/wiki/osu!_File_Formats/Osu_(file_format)#videos
+                        if (line.StartsWith("Video,") || line.StartsWith("1,"))
                         {
                             var infos = line.Split(',');
                             VideoInfo = new VideoData { Offset = double.Parse(infos[1]), Filename = infos[2].Trim('"') };
