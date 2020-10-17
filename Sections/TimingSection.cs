@@ -92,27 +92,17 @@ namespace OSharp.Beatmap.Sections
             var lines = TimingList.Where(t => t.Offset <= offset + 1/*tolerance*/).ToArray();
             if (lines.Length == 0)
                 return TimingList.First();
-            double timing = lines.Max(t => t.Offset);
-            TimingPoint[] points = TimingList.Where(t => Math.Abs(t.Offset - timing) < 1).ToArray();
+            var timing = lines.Max(t => t.Offset);
+            var samePositionPoints = TimingList.Where(t => Math.Abs(t.Offset - timing) < 1).ToArray();
             TimingPoint point;
-            if (points.Length > 1)
+            if (samePositionPoints.Length > 1)
             {
-                var greens = points.Where(k => k.Inherit);
-                point = greens.Last();
-                //if (points.Length == 2)
-                //{
-                //    if (points[0].Inherit != points[1].Inherit)
-                //    {
-                //        point = points.First(t => t.Inherit);
-                //    }
-                //    else
-                //        throw new RepeatTimingSectionException("存在同一时刻两条相同类型的Timing Section。");
-                //}
-                //else
-                //    throw new RepeatTimingSectionException("存在同一时刻多条Timing Section。");
+                var greens = samePositionPoints.Where(k => k.Inherit);
+                point = greens.LastOrDefault() ?? samePositionPoints.Last();
+                // there might be possibility that two red lines at same time
             }
             else
-                point = points[0];
+                point = samePositionPoints[0];
 
             return point;
         }
