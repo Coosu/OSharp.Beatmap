@@ -1,13 +1,11 @@
 ﻿using OSharp.Beatmap.Configurable;
 using OSharp.Beatmap.Sections;
+using OSharp.Beatmap.Sections.Event;
+using OSharp.Beatmap.Sections.Timing;
 using System;
 using System.Collections.Generic;
 using System.IO;
-using System.Linq;
-using System.Reflection;
 using System.Threading.Tasks;
-using OSharp.Beatmap.Sections.Event;
-using OSharp.Beatmap.Sections.Timing;
 
 namespace OSharp.Beatmap
 {
@@ -34,7 +32,11 @@ namespace OSharp.Beatmap
         {
             return await Task.Run(() =>
             {
-                var targetPath = (path?.StartsWith(@"\\?\") == true) ? path : @"\\?\" + path;
+#if NETFRAMEWORK
+                var targetPath = path?.StartsWith(@"\\?\") == true ? path : @"\\?\" + path;
+#else
+                var targetPath = path;
+#endif
                 try
                 {
                     using (var sr = new StreamReader(targetPath))
